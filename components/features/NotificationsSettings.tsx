@@ -41,19 +41,23 @@ export function NotificationsSettings() {
 
   useEffect(() => {
     (async () => {
+      if (typeof window === "undefined") return;
+
+      // iOS Safari n'expose PushManager/Notification qu'en mode standalone
+      // (après "Ajouter à l'écran d'accueil"). On check ça AVANT le support,
+      // sinon on dirait "non supporté" alors qu'il suffit d'installer.
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS && !isStandaloneDisplay()) {
+        setState({ kind: "needs-install" });
+        return;
+      }
+
       const supported =
-        typeof window !== "undefined" &&
         "serviceWorker" in navigator &&
         "PushManager" in window &&
         "Notification" in window;
       if (!supported) {
         setState({ kind: "unsupported" });
-        return;
-      }
-
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (isIOS && !isStandaloneDisplay()) {
-        setState({ kind: "needs-install" });
         return;
       }
 
