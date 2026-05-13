@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import type { ReminderFormState } from "@/app/actions/reminders";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -59,19 +59,26 @@ export function ReminderForm({
 }: ReminderFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const [message, setMessage] = useState(initialData?.message ?? "");
-  const [selection, setSelection] = useState<Selection>(() => {
-    if (initialData) {
-      const initDate = new Date(initialData.scheduledAt);
-      return detectPresetFromDate(initDate) ?? "custom";
-    }
-    return "1h";
-  });
-  const [datetimeValue, setDatetimeValue] = useState<string>(() => {
-    if (initialData) return initialData.scheduledAt;
-    return toLocalDatetimeInputValue(getPresetDate("1h"));
-  });
+  // État initial stable (sans Date.now()) pour que le rendu serveur == client.
+  // Les valeurs dépendantes du temps sont fixées dans le useEffect ci-dessous.
+  const [selection, setSelection] = useState<Selection>(
+    initialData ? "custom" : "1h",
+  );
+  const [datetimeValue, setDatetimeValue] = useState<string>(
+    initialData?.scheduledAt ?? "",
+  );
+  const [ceSoirAvailable, setCeSoirAvailable] = useState(true);
 
-  const ceSoirAvailable = new Date().getHours() < 20;
+  const initialScheduledAt = initialData?.scheduledAt ?? null;
+  useEffect(() => {
+    if (initialScheduledAt) {
+      const detected = detectPresetFromDate(new Date(initialScheduledAt));
+      if (detected) setSelection(detected);
+    } else {
+      setDatetimeValue(toLocalDatetimeInputValue(getPresetDate("1h")));
+    }
+    setCeSoirAvailable(new Date().getHours() < 20);
+  }, [initialScheduledAt]);
 
   const onChipClick = (chip: Chip) => {
     if (chip.kind === "custom") {
