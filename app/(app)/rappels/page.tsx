@@ -1,0 +1,109 @@
+import Link from "next/link";
+import { button } from "@/components/ui/Button";
+import { ReminderFilters } from "@/components/features/ReminderFilters";
+import { ReminderListItem } from "@/components/features/ReminderListItem";
+import { createClient } from "@/lib/supabase/server";
+
+type Filter = "pending" | "done" | "all";
+
+function parseFilter(raw: string | undefined): Filter {
+  if (raw === "done" || raw === "all") return raw;
+  return "pending";
+}
+
+export default async function RappelsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const { filter: rawFilter } = await searchParams;
+  const filter = parseFilter(rawFilter);
+  const supabase = await createClient();
+
+  const { count: pendingCount } = await supabase
+    .from("reminders")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "pending");
+
+  const { count: totalCount } = await supabase
+    .from("reminders")
+    .select("*", { count: "exact", head: true });
+
+  let query = supabase
+    .from("reminders")
+    .select("*")
+    .order("scheduled_at", { ascending: true });
+  if (filter === "pending") query = query.eq("status", "pending");
+  else if (filter === "done") query = query.eq("status", "done");
+
+  const { data: reminders } = await query;
+  const list = reminders ?? [];
+  const isEmpty = list.length === 0;
+  const isFirstTime = (totalCount ?? 0) === 0;
+
+  return (
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10 pb-48">
+      <header className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold text-fg">Tes rappels</h1>
+        <p className="text-sm text-fg-secondary">
+          {pendingCount ?? 0} en attente
+        </p>
+      </header>
+
+      <ReminderFilters />
+
+      {isEmpty ? (
+        <div className="flex flex-col items-center gap-4 py-16 text-center">
+          {isFirstTime ? (
+            <>
+              <p className="text-base text-fg-secondary">
+                Aucun rappel pour l&apos;instant.
+              </p>
+              <Link
+                href="/rappels/nouveau"
+                className={button({ variant: "primary" })}
+              >
+                Créer mon premier rappel
+              </Link>
+            </>
+          ) : (
+            <p className="text-base text-fg-secondary">
+              {filter === "done"
+                ? "Aucun rappel fait pour le moment."
+                : filter === "pending"
+                  ? "Aucun rappel en attente."
+                  : "Aucun rappel."}
+            </p>
+          )}
+        </div>
+      ) : (
+        <ul className="flex flex-col">
+          {list.map((reminder) => (
+            <li key={reminder.id}>
+              <ReminderListItem reminder={reminder} />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!isEmpty && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-[80px] z-30">
+          <div
+            aria-hidden
+            className="h-6 bg-gradient-to-t from-bg to-transparent"
+          />
+          <div className="pointer-events-auto bg-bg px-6 pb-4 pt-2">
+            <div className="mx-auto max-w-2xl">
+              <Link
+                href="/rappels/nouveau"
+                className={button({ variant: "primary", fullWidth: true })}
+              >
+                Nouveau rappel
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}

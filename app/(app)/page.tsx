@@ -1,5 +1,3 @@
-import { signOut } from "@/app/actions/auth";
-import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 
 function extractFirstName(email: string | undefined): string {
@@ -17,19 +15,11 @@ export default async function HomePage() {
   const firstName = extractFirstName(user?.email);
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-10 pb-32">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-fg">Bonjour {firstName}</h1>
-        <p className="text-sm text-fg-secondary">
-          Page d&apos;accueil placeholder — le dashboard arrive en Phase 4.
-        </p>
-      </header>
-
-      <form action={signOut}>
-        <Button type="submit" variant="secondary">
-          Se déconnecter
-        </Button>
-      </form>
+    <main className="mx-auto flex max-w-2xl flex-col gap-2 px-6 py-10 pb-32">
+      <h1 className="text-2xl font-bold text-fg">Bonjour {firstName}</h1>
+      <p className="text-sm text-fg-secondary">
+        Page d&apos;accueil placeholder — le dashboard arrive bientôt.
+      </p>
     </main>
   );
 }

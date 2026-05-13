@@ -1,10 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "@/types/database";
 
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
@@ -19,7 +20,7 @@ export async function createClient() {
             );
           } catch {
             // Appel depuis un Server Component : Next 16 interdit la mutation de cookies au rendu.
-            // Le refresh de session est géré par le middleware (Phase 3).
+            // Le refresh de session est géré par le proxy.
           }
         },
       },

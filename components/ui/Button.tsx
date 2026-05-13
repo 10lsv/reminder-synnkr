@@ -1,12 +1,12 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const button = cva(
+export const button = cva(
   [
-    "inline-flex items-center justify-center",
+    "inline-flex items-center justify-center cursor-pointer touch-manipulation",
     "transition-all duration-150 ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
-    "disabled:opacity-50 disabled:pointer-events-none",
+    "disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed",
   ],
   {
     variants: {
@@ -45,7 +45,14 @@ const button = cva(
 
 interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof button> {}
+    VariantProps<typeof button> {
+  /**
+   * HTML button type. Defaults to `"button"` to avoid accidental form
+   * submission when placed inside a `<form>`. Pass `type="submit"`
+   * explicitly when the button is intended to submit a form.
+   */
+  type?: "button" | "submit" | "reset";
+}
 
 export function Button({
   variant,
