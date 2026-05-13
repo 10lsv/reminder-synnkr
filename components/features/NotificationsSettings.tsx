@@ -73,13 +73,28 @@ export function NotificationsSettings() {
 
       const existing = await registration.pushManager.getSubscription();
       if (existing) {
-        // Le browser garde la sub même si notre DB l'a perdue (reset table,
-        // changement de keys VAPID, etc.). On re-upsert systématiquement pour
-        // garantir que la DB reflète l'état browser. Upsert idempotent côté
-        // serveur grâce à unique(user_id, endpoint).
-        await subscribePush(existing.toJSON()).catch((err) => {
-          console.warn("[NotificationsSettings] resync:", err);
-        });
+        // Le browser garde la sub même si notre DB l'a perdue. On re-upsert
+        // systématiquement (idempotent grâce à unique user_id+endpoint). Si la
+        // resync rate, on désinscrit côté browser pour repartir propre — sinon
+        // l'utilisateur reste coincé en état "subscribed" sans rien en DB.
+        try {
+          const result = await subscribePush(existing.toJSON());
+          if (!result.ok) {
+            console.warn("[NotificationsSettings] resync failed:", result.error);
+            await existing.unsubscribe().catch(() => {});
+            setFeedback(`Resync impossible : ${result.error}`);
+            setState({ kind: "needs-permission" });
+            return;
+          }
+        } catch (err) {
+          console.warn("[NotificationsSettings] resync threw:", err);
+          await existing.unsubscribe().catch(() => {});
+          setFeedback(
+            `Resync exception : ${err instanceof Error ? err.message : "inconnue"}`,
+          );
+          setState({ kind: "needs-permission" });
+          return;
+        }
         setState({ kind: "subscribed" });
       } else {
         setState({ kind: "needs-permission" });

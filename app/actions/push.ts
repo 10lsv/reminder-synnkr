@@ -52,8 +52,11 @@ export async function subscribePush(raw: unknown): Promise<PushActionResult> {
   );
 
   if (error) {
-    console.warn("[subscribePush] db:", error.message);
-    return { ok: false, error: "Impossible d'enregistrer l'abonnement." };
+    console.warn("[subscribePush] db:", error.message, error.code, error.hint);
+    return {
+      ok: false,
+      error: `DB ${error.code ?? ""}: ${error.message}`.trim(),
+    };
   }
 
   return { ok: true };
