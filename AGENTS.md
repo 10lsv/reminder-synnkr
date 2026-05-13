@@ -13,3 +13,17 @@ Pour tester sur iPhone :
 - ou Vercel preview deploy (URL HTTPS publique)
 
 Pour itérer rapidement, utilise Mac/Chrome avec `pnpm dev`. iPhone uniquement quand tu veux valider.
+
+## Variables d'environnement
+
+Toutes dans `.env.local` (gitignored). Ne JAMAIS coller les valeurs dans le chat ou les commit.
+
+| Variable | Usage | Phase | Public ? |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL projet Supabase | 3 | oui (NEXT_PUBLIC) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Clé anon Supabase | 3 | oui (NEXT_PUBLIC) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Clé publique VAPID (subscribe push) | 5.3 | oui (NEXT_PUBLIC) |
+| `VAPID_PRIVATE_KEY` | Clé privée VAPID (signature push côté serveur) | 5.3 | **non, secret** |
+| `VAPID_SUBJECT` | Identifiant subject VAPID, format `mailto:email` | 5.3 | non |
+
+Pour générer une paire VAPID : `pnpm dlx web-push generate-vapid-keys`.
