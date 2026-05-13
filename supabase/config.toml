@@ -1,0 +1,8 @@
+project_id = "xhszibfaqndtlmuilerh"
+
+# send-due-reminders est appelée par pg_cron avec un Bearer custom
+# (CRON_SECRET partagé), pas un JWT Supabase. La fonction vérifie
+# elle-même l'Authorization header. On désactive donc le check JWT
+# automatique pour ne pas rejeter pg_cron en amont.
+[functions.send-due-reminders]
+verify_jwt = false
