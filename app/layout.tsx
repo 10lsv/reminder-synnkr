@@ -11,6 +11,15 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Reminder",
   description: "Un message de ton toi passé à ton toi présent.",
+  applicationName: "Reminder",
+  appleWebApp: {
+    capable: true,
+    title: "Reminder",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
