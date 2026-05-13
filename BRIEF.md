@@ -1,4 +1,4 @@
-# BRIEF — Echo
+# BRIEF — Reminder
 
 > Lire intégralement ce document avant de proposer du code. Ne dévier de la DA et de la stack qu'avec validation explicite.
 
@@ -7,11 +7,11 @@
 ## 1. Vision produit
 
 ### Pitch
-Les rappels iPhone natifs échouent parce qu'ils sont **dissociés de l'intention initiale de l'utilisateur**. Echo transforme chaque rappel en **message de l'utilisateur passé à l'utilisateur présent**, créant une connexion émotionnelle qui rend l'ignorance coûteuse.
+Les rappels iPhone natifs échouent parce qu'ils sont **dissociés de l'intention initiale de l'utilisateur**. Reminder transforme chaque rappel en **message de l'utilisateur passé à l'utilisateur présent**, créant une connexion émotionnelle qui rend l'ignorance coûteuse.
 
 ### Différenciation
 - À la création, l'utilisateur écrit un message **en s'adressant à lui-même** (pas un titre + description générique)
-- La notification push système n'affiche que `Echo · {heure}` — **aucun aperçu du contenu**. Cela force l'ouverture de l'app pour découvrir le message.
+- La notification push système n'affiche que `Reminder · {heure}` — **aucun aperçu du contenu**. Cela force l'ouverture de l'app pour découvrir le message.
 - L'action "Plus tard" exige une **raison textuelle saisie au clavier** (min 10 caractères). Ces raisons sont archivées et présentées dans le dashboard.
 - Le dashboard reprend la structure visuelle de Sub Synnkr : compteur principal, sections labellisées en uppercase, accent violet en touche.
 
@@ -99,6 +99,7 @@ Police : **Inter** (variable, importée via `next/font`).
 --weight-regular: 400;
 --weight-medium: 500;
 --weight-semibold: 600;
+--weight-bold: 700;
 
 /* Letter spacing */
 --tracking-label: 0.08em;   /* pour labels uppercase */
@@ -199,8 +200,8 @@ Minimalistes. Transitions de 150-200ms en `ease-out` sur les états (hover, focu
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=     # Pour les routes serveur uniquement
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=     # Pour les routes serveur uniquement
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
 VAPID_SUBJECT=mailto:contact@example.com
@@ -214,7 +215,7 @@ CRON_SECRET=                    # Bearer token pour authentifier Vercel Cron
 ### Structure des dossiers
 
 ```
-echo-app/
+reminder-app/
 ├── app/
 │   ├── (auth)/
 │   │   ├── login/
@@ -343,7 +344,7 @@ create trigger on_auth_user_created
 
 ### 6.1 Login (`/login`)
 - Logo centré (placeholder simple en SVG pour le moment)
-- Titre "Echo" en grand
+- Titre "Reminder" en grand
 - Champ email (input pilule)
 - Champ password (input pilule)
 - Bouton "Se connecter" (CTA noir pilule)
@@ -379,7 +380,7 @@ create trigger on_auth_user_created
 **C'est l'écran le plus important. Soigner la composition.**
 
 - Fond blanc total, aucun chrome
-- Petit label `ECHO · {heure}` en haut
+- Petit label `REMINDER · {heure}` en haut
 - Le message s'affiche en très grand (`--text-message: 36px`), centré verticalement, font-weight 500
 - En bas, deux actions :
   - Bouton principal `Fait` (CTA noir pilule pleine largeur)
@@ -397,7 +398,7 @@ create trigger on_auth_user_created
 
 ### Service worker (`public/sw.js`)
 Doit gérer :
-- `push` event : afficher la notification avec `title: "Echo"`, `body: "{heure}"` (volontairement opaque, sans contenu du message), `data: { reminderId }`
+- `push` event : afficher la notification avec `title: "Reminder"`, `body: "{heure}"` (volontairement opaque, sans contenu du message), `data: { reminderId }`
 - `notificationclick` event : ouvrir `/actif/{reminderId}`
 
 ### Flow de souscription
@@ -436,8 +437,8 @@ Doit gérer :
 ### `public/manifest.json`
 ```json
 {
-  "name": "Echo",
-  "short_name": "Echo",
+  "name": "Reminder",
+  "short_name": "Reminder",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",

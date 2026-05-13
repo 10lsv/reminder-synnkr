@@ -1,26 +1,118 @@
 @import "tailwindcss";
 
+/* === Tokens DA — source de vérité (BRIEF.md §2) === */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Fond et surfaces */
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --border: #EDEDED;
+  --border-strong: #D4D4D4;
+
+  /* Texte */
+  --fg: #0A0A0A;
+  --fg-secondary: #6B6B6B;
+  --fg-tertiary: #A0A0A0;
+
+  /* CTA */
+  --cta-bg: #0A0A0A;
+  --cta-fg: #FFFFFF;
+
+  /* Accent (touche uniquement) */
+  --accent: #B8B0E0;
+  --accent-strong: #9A8FD4;
+  --accent-bg: #F2F0FA;
+
+  /* États */
+  --danger: #D32F2F;
+  --success: #2E7D32;
+
+  /* Police */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  /* Échelle texte */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-hero: 48px;
+  --text-message: 36px;
+
+  /* Poids */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Letter spacing */
+  --tracking-label: 0.08em;
+  --tracking-normal: 0em;
+  --tracking-tight: -0.02em;
+
+  /* Espacement (base 4) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Rayons */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
 }
 
+/* === Tailwind v4 — expose les tokens en utilitaires === */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-tertiary: var(--fg-tertiary);
+  --color-cta-bg: var(--cta-bg);
+  --color-cta-fg: var(--cta-fg);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-bg: var(--accent-bg);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-sans);
+
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+  --text-hero: var(--text-hero);
+  --text-message: var(--text-message);
+
+  --font-weight-regular: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-bold);
+
+  --tracking-label: var(--tracking-label);
+  --tracking-tight: var(--tracking-tight);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-pill: var(--radius-pill);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
 }
