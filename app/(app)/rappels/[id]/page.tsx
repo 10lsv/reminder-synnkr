@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { updateReminder } from "@/app/actions/reminders";
 import { DeleteReminderButton } from "@/components/features/DeleteReminderButton";
 import { ReminderForm } from "@/components/features/ReminderForm";
-import { toLocalDatetimeInputValue } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function RappelDetailPage({
@@ -39,7 +38,8 @@ export default async function RappelDetailPage({
         action={boundUpdate}
         initialData={{
           message: reminder.message,
-          scheduledAt: toLocalDatetimeInputValue(reminder.scheduled_at),
+          // ISO brut — le form le convertit en local côté client (TZ correcte).
+          scheduledAt: reminder.scheduled_at,
         }}
         submitLabel="Enregistrer"
       />

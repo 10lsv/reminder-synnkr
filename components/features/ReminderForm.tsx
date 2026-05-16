@@ -64,21 +64,23 @@ export function ReminderForm({
   const [selection, setSelection] = useState<Selection>(
     initialData ? "custom" : "1h",
   );
-  const [datetimeValue, setDatetimeValue] = useState<string>(
-    initialData?.scheduledAt ?? "",
-  );
+  // SSR-stable : init vide pour éviter d'embarquer une valeur dépendant de la
+  // TZ serveur. Le useEffect ci-dessous fixe la valeur en TZ navigateur.
+  const [datetimeValue, setDatetimeValue] = useState<string>("");
   const [ceSoirAvailable, setCeSoirAvailable] = useState(true);
 
-  const initialScheduledAt = initialData?.scheduledAt ?? null;
+  const initialScheduledAtIso = initialData?.scheduledAt ?? null;
   useEffect(() => {
-    if (initialScheduledAt) {
-      const detected = detectPresetFromDate(new Date(initialScheduledAt));
+    if (initialScheduledAtIso) {
+      const d = new Date(initialScheduledAtIso);
+      setDatetimeValue(toLocalDatetimeInputValue(d));
+      const detected = detectPresetFromDate(d);
       if (detected) setSelection(detected);
     } else {
       setDatetimeValue(toLocalDatetimeInputValue(getPresetDate("1h")));
     }
     setCeSoirAvailable(new Date().getHours() < 20);
-  }, [initialScheduledAt]);
+  }, [initialScheduledAtIso]);
 
   const onChipClick = (chip: Chip) => {
     if (chip.kind === "custom") {
@@ -171,7 +173,19 @@ export function ReminderForm({
           />
         )}
 
-        <input type="hidden" name="scheduledAt" value={datetimeValue} />
+        {/*
+          datetime-local renvoie une string sans TZ. Si on l'envoie brute, le
+          serveur la parse dans SA timezone (UTC sur Vercel) — décalage de
+          plusieurs heures pour l'utilisateur. On la convertit donc en ISO
+          côté client, où new Date(...) utilise la TZ du navigateur.
+        */}
+        <input
+          type="hidden"
+          name="scheduledAt"
+          value={
+            datetimeValue ? new Date(datetimeValue).toISOString() : ""
+          }
+        />
       </div>
 
       <Button type="submit" variant="primary" fullWidth disabled={pending}>
