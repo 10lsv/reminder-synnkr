@@ -25,6 +25,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Lock zoom : empêche le pinch-to-zoom Safari qui faisait disparaître la
+  // nav fixed bottom hors viewport (cf. retour user 2026-05-17).
+  maximumScale: 1,
+  userScalable: false,
   themeColor: "#FFFFFF",
 };
 
