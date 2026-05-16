@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { RECURRENCE_VALUES } from "@/lib/recurrence";
 import { createClient } from "@/lib/supabase/server";
 
 const reminderSchema = z.object({
@@ -19,6 +20,7 @@ const reminderSchema = z.object({
       return d;
     })
     .refine((d) => d.getTime() > Date.now(), { message: "Date passée" }),
+  recurrence: z.enum(RECURRENCE_VALUES).default("none"),
 });
 
 export type ReminderFormState = { error: string | null };
@@ -39,6 +41,7 @@ export async function createReminder(
   const parsed = reminderSchema.safeParse({
     message: formData.get("message"),
     scheduledAt: formData.get("scheduledAt"),
+    recurrence: formData.get("recurrence") ?? "none",
   });
   if (!parsed.success) {
     console.warn(
@@ -53,6 +56,7 @@ export async function createReminder(
     user_id: user.id,
     message: parsed.data.message,
     scheduled_at: parsed.data.scheduledAt.toISOString(),
+    recurrence: parsed.data.recurrence,
   });
   if (error) {
     console.warn("[createReminder] db:", error.message);
@@ -72,6 +76,7 @@ export async function updateReminder(
   const parsed = reminderSchema.safeParse({
     message: formData.get("message"),
     scheduledAt: formData.get("scheduledAt"),
+    recurrence: formData.get("recurrence") ?? "none",
   });
   if (!parsed.success) {
     console.warn(
@@ -97,6 +102,7 @@ export async function updateReminder(
     .update({
       message: parsed.data.message,
       scheduled_at: parsed.data.scheduledAt.toISOString(),
+      recurrence: parsed.data.recurrence,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)

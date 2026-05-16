@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
   const { data: due, error: selectErr } = await supabase
     .from("reminders")
-    .select("id, user_id, message, scheduled_at")
+    .select("id, user_id, message, scheduled_at, recurrence")
     .eq("status", "pending")
     .is("notified_at", null)
     .lte("scheduled_at", now);
@@ -114,6 +114,29 @@ Deno.serve(async (req) => {
         .from("reminders")
         .update({ notified_at: now })
         .eq("id", reminder.id);
+
+      // Récurrence : à la première notification, on matérialise la prochaine
+      // occurrence. La chaîne se poursuit tant que recurrence != 'none'.
+      const nextAt = nextScheduledAt(
+        reminder.scheduled_at,
+        reminder.recurrence,
+      );
+      if (nextAt) {
+        const { error: insertErr } = await supabase
+          .from("reminders")
+          .insert({
+            user_id: reminder.user_id,
+            message: reminder.message,
+            scheduled_at: nextAt,
+            recurrence: reminder.recurrence,
+          });
+        if (insertErr) {
+          console.error(
+            "[send-due-reminders] next occurrence insert:",
+            insertErr.message,
+          );
+        }
+      }
     }
   }
 
@@ -140,4 +163,21 @@ function jsonResponse(body: unknown, status: number): Response {
     status,
     headers: { "content-type": "application/json" },
   });
+}
+
+function nextScheduledAt(currentIso: string, recurrence: string): string | null {
+  const d = new Date(currentIso);
+  switch (recurrence) {
+    case "daily":
+      d.setUTCDate(d.getUTCDate() + 1);
+      return d.toISOString();
+    case "weekly":
+      d.setUTCDate(d.getUTCDate() + 7);
+      return d.toISOString();
+    case "monthly":
+      d.setUTCMonth(d.getUTCMonth() + 1);
+      return d.toISOString();
+    default:
+      return null;
+  }
 }

@@ -72,6 +72,7 @@ export type Database = {
           id: string
           message: string
           notified_at: string | null
+          recurrence: string
           scheduled_at: string
           status: string
           updated_at: string | null
@@ -83,6 +84,7 @@ export type Database = {
           id?: string
           message: string
           notified_at?: string | null
+          recurrence?: string
           scheduled_at: string
           status?: string
           updated_at?: string | null
@@ -94,6 +96,7 @@ export type Database = {
           id?: string
           message?: string
           notified_at?: string | null
+          recurrence?: string
           scheduled_at?: string
           status?: string
           updated_at?: string | null

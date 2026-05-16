@@ -5,6 +5,7 @@ import type { ReminderFormState } from "@/app/actions/reminders";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import type { Recurrence } from "@/lib/recurrence";
 import {
   formatPreview,
   getPresetDate,
@@ -19,9 +20,20 @@ interface ReminderFormProps {
     prevState: ReminderFormState,
     formData: FormData,
   ) => Promise<ReminderFormState>;
-  initialData?: { message: string; scheduledAt: string };
+  initialData?: {
+    message: string;
+    scheduledAt: string;
+    recurrence?: Recurrence;
+  };
   submitLabel?: string;
 }
+
+const recurrenceChips: { value: Recurrence; label: string }[] = [
+  { value: "none", label: "Ponctuel" },
+  { value: "daily", label: "Quotidien" },
+  { value: "weekly", label: "Hebdo" },
+  { value: "monthly", label: "Mensuel" },
+];
 
 const initialState: ReminderFormState = { error: null };
 const MAX = 500;
@@ -68,6 +80,9 @@ export function ReminderForm({
   // TZ serveur. Le useEffect ci-dessous fixe la valeur en TZ navigateur.
   const [datetimeValue, setDatetimeValue] = useState<string>("");
   const [ceSoirAvailable, setCeSoirAvailable] = useState(true);
+  const [recurrence, setRecurrence] = useState<Recurrence>(
+    initialData?.recurrence ?? "none",
+  );
 
   const initialScheduledAtIso = initialData?.scheduledAt ?? null;
   useEffect(() => {
@@ -186,6 +201,34 @@ export function ReminderForm({
             datetimeValue ? new Date(datetimeValue).toISOString() : ""
           }
         />
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <span className="text-base font-medium text-fg">Répétition ?</span>
+        <div className="flex flex-wrap gap-2">
+          {recurrenceChips.map((chip) => {
+            const active = recurrence === chip.value;
+            return (
+              <button
+                key={chip.value}
+                type="button"
+                onClick={() => setRecurrence(chip.value)}
+                aria-pressed={active}
+                className={cn(
+                  "rounded-pill border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
+                  "transition-colors duration-150 ease-out",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+                  active
+                    ? "border-fg bg-fg text-bg"
+                    : "border-border bg-transparent text-fg hover:border-fg-secondary",
+                )}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+        <input type="hidden" name="recurrence" value={recurrence} />
       </div>
 
       <Button type="submit" variant="primary" fullWidth disabled={pending}>

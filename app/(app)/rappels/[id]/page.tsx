@@ -3,7 +3,14 @@ import { markAsDone, updateReminder } from "@/app/actions/reminders";
 import { DeleteReminderButton } from "@/components/features/DeleteReminderButton";
 import { ReminderForm } from "@/components/features/ReminderForm";
 import { Button } from "@/components/ui/Button";
+import { RECURRENCE_VALUES, type Recurrence } from "@/lib/recurrence";
 import { createClient } from "@/lib/supabase/server";
+
+function toRecurrence(value: string | null | undefined): Recurrence {
+  return (RECURRENCE_VALUES as readonly string[]).includes(value ?? "")
+    ? (value as Recurrence)
+    : "none";
+}
 
 export default async function RappelDetailPage({
   params,
@@ -41,6 +48,7 @@ export default async function RappelDetailPage({
           message: reminder.message,
           // ISO brut — le form le convertit en local côté client (TZ correcte).
           scheduledAt: reminder.scheduled_at,
+          recurrence: toRecurrence(reminder.recurrence),
         }}
         submitLabel="Enregistrer"
       />
