@@ -71,6 +71,7 @@ export type Database = {
           done_at: string | null
           id: string
           message: string
+          notified_at: string | null
           scheduled_at: string
           status: string
           updated_at: string | null
@@ -81,6 +82,7 @@ export type Database = {
           done_at?: string | null
           id?: string
           message: string
+          notified_at?: string | null
           scheduled_at: string
           status?: string
           updated_at?: string | null
@@ -91,6 +93,7 @@ export type Database = {
           done_at?: string | null
           id?: string
           message?: string
+          notified_at?: string | null
           scheduled_at?: string
           status?: string
           updated_at?: string | null

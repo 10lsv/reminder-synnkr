@@ -156,4 +156,76 @@ export async function markAsDone(id: string): Promise<void> {
 
   revalidatePath("/rappels");
   revalidatePath("/");
+  redirect("/");
+}
+
+const SNOOZE_MIN_CHARS = 10;
+const SNOOZE_MAX_CHARS = 500;
+const SNOOZE_DURATION_MS = 10 * 60 * 1000;
+
+const snoozeSchema = z.object({
+  reason: z.string().trim().min(SNOOZE_MIN_CHARS).max(SNOOZE_MAX_CHARS),
+});
+
+export type SnoozeFormState = { error: string | null };
+
+export async function snoozeReminder(
+  id: string,
+  _prev: SnoozeFormState,
+  formData: FormData,
+): Promise<SnoozeFormState> {
+  const parsed = snoozeSchema.safeParse({ reason: formData.get("reason") });
+  if (!parsed.success) {
+    return {
+      error: `Donne une raison d'au moins ${SNOOZE_MIN_CHARS} caractères.`,
+    };
+  }
+
+  const { supabase, user } = await requireUser();
+
+  // RLS protège déjà mais on vérifie l'ownership pour renvoyer un état propre.
+  const { data: existing } = await supabase
+    .from("reminders")
+    .select("user_id, status")
+    .eq("id", id)
+    .maybeSingle();
+  if (!existing || existing.user_id !== user.id) {
+    redirect("/");
+  }
+  if (existing.status === "done") {
+    return { error: "Ce rappel est déjà marqué fait." };
+  }
+
+  const nowIso = new Date().toISOString();
+  const nextAtIso = new Date(Date.now() + SNOOZE_DURATION_MS).toISOString();
+
+  const { error: insertErr } = await supabase.from("snooze_reasons").insert({
+    reminder_id: id,
+    user_id: user.id,
+    reason: parsed.data.reason,
+  });
+  if (insertErr) {
+    console.warn("[snoozeReminder] insert:", insertErr.message);
+    return { error: "Impossible d'enregistrer la raison." };
+  }
+
+  // status reste 'pending' : c'est le cron qui re-notifiera dans 10 min.
+  // notified_at remis à null pour rouvrir la fenêtre de notification.
+  const { error: updateErr } = await supabase
+    .from("reminders")
+    .update({
+      scheduled_at: nextAtIso,
+      notified_at: null,
+      updated_at: nowIso,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (updateErr) {
+    console.warn("[snoozeReminder] update:", updateErr.message);
+    return { error: "Impossible de reprogrammer le rappel." };
+  }
+
+  revalidatePath("/rappels");
+  revalidatePath("/");
+  redirect("/");
 }

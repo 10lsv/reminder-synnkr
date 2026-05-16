@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
     const payload = JSON.stringify({
       title: "Reminder",
       body: reminder.message,
-      url: `/rappels/${reminder.id}`,
+      url: `/actif/${reminder.id}`,
       reminderId: reminder.id,
     });
 

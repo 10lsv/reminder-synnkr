@@ -34,6 +34,9 @@ function isActive(pathname: string, href: string) {
 export function NavBottom() {
   const pathname = usePathname();
 
+  // Sur l'écran rappel actif, aucun chrome (cf. BRIEF §6.6).
+  if (pathname.startsWith("/actif/")) return null;
+
   return (
     <nav
       aria-label="Navigation principale"
