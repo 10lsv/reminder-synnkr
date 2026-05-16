@@ -99,7 +99,7 @@ export default async function HomePage() {
           <ul className="flex flex-col">
             {upcomingList.map((reminder) => (
               <li key={reminder.id}>
-                <ReminderListItem reminder={reminder} />
+                <ReminderListItem reminder={reminder} showActions={false} />
               </li>
             ))}
           </ul>
@@ -123,6 +123,12 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
+          <Link
+            href="/excuses"
+            className="self-start text-sm text-fg-secondary underline-offset-4 hover:underline"
+          >
+            Voir toutes les excuses
+          </Link>
         </section>
       )}
     </main>

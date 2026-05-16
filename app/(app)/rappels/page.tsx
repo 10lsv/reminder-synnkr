@@ -3,6 +3,7 @@ import { button } from "@/components/ui/Button";
 import { CategoryFilter } from "@/components/features/CategoryFilter";
 import { ReminderFilters } from "@/components/features/ReminderFilters";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
+import { ReminderSearch } from "@/components/features/ReminderSearch";
 import { createClient } from "@/lib/supabase/server";
 
 type Filter = "pending" | "done" | "all";
@@ -12,14 +13,25 @@ function parseFilter(raw: string | undefined): Filter {
   return "pending";
 }
 
+// Échappe les caractères pattern de PostgreSQL ilike pour qu'une saisie
+// utilisateur soit interprétée littéralement.
+function escapeIlike(q: string): string {
+  return q.replace(/[%_\\]/g, (m) => `\\${m}`);
+}
+
 export default async function RappelsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; category?: string }>;
+  searchParams: Promise<{ filter?: string; category?: string; q?: string }>;
 }) {
-  const { filter: rawFilter, category: rawCategory } = await searchParams;
+  const {
+    filter: rawFilter,
+    category: rawCategory,
+    q: rawQ,
+  } = await searchParams;
   const filter = parseFilter(rawFilter);
   const category = rawCategory?.trim() || null;
+  const q = rawQ?.trim() || null;
   const supabase = await createClient();
 
   const { count: pendingCount } = await supabase
@@ -53,6 +65,7 @@ export default async function RappelsPage({
   if (filter === "pending") query = query.eq("status", "pending");
   else if (filter === "done") query = query.eq("status", "done");
   if (category) query = query.eq("category", category);
+  if (q) query = query.ilike("message", `%${escapeIlike(q)}%`);
 
   const { data: reminders } = await query;
   const list = reminders ?? [];
@@ -67,6 +80,8 @@ export default async function RappelsPage({
           {pendingCount ?? 0} en attente
         </p>
       </header>
+
+      <ReminderSearch />
 
       <ReminderFilters />
 
@@ -88,11 +103,13 @@ export default async function RappelsPage({
             </>
           ) : (
             <p className="text-base text-fg-secondary">
-              {filter === "done"
-                ? "Aucun rappel fait pour le moment."
-                : filter === "pending"
-                  ? "Aucun rappel en attente."
-                  : "Aucun rappel."}
+              {q
+                ? `Aucun rappel ne contient « ${q} ».`
+                : filter === "done"
+                  ? "Aucun rappel fait pour le moment."
+                  : filter === "pending"
+                    ? "Aucun rappel en attente."
+                    : "Aucun rappel."}
             </p>
           )}
         </div>

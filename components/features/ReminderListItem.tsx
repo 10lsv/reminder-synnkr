@@ -14,7 +14,15 @@ const statusLabels: Record<string, string> = {
   expired: "Expiré",
 };
 
-export function ReminderListItem({ reminder }: { reminder: Reminder }) {
+interface ReminderListItemProps {
+  reminder: Reminder;
+  showActions?: boolean;
+}
+
+export function ReminderListItem({
+  reminder,
+  showActions = true,
+}: ReminderListItemProps) {
   const statusLabel = statusLabels[reminder.status];
   const recurrenceLabel =
     reminder.recurrence !== "none"
@@ -54,20 +62,22 @@ export function ReminderListItem({ reminder }: { reminder: Reminder }) {
           )}
         </div>
       </Link>
-      <div className="flex items-center gap-1 pt-1">
-        <Link
-          href={`/rappels/${reminder.id}`}
-          aria-label="Modifier"
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-pill",
-            "text-fg-secondary hover:text-fg transition-colors duration-150 ease-out",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
-          )}
-        >
-          <Pencil size={18} strokeWidth={2} aria-hidden />
-        </Link>
-        <InlineDeleteReminder id={reminder.id} />
-      </div>
+      {showActions && (
+        <div className="flex items-center gap-1 pt-1">
+          <Link
+            href={`/rappels/${reminder.id}`}
+            aria-label="Modifier"
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-pill",
+              "text-fg-secondary hover:text-fg transition-colors duration-150 ease-out",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+            )}
+          >
+            <Pencil size={18} strokeWidth={2} aria-hidden />
+          </Link>
+          <InlineDeleteReminder id={reminder.id} />
+        </div>
+      )}
     </div>
   );
 }
