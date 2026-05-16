@@ -1,8 +1,14 @@
 import { signOut } from "@/app/actions/auth";
 import { NotificationsSettings } from "@/components/features/NotificationsSettings";
 import { Button } from "@/components/ui/Button";
+import { createClient } from "@/lib/supabase/server";
 
-export default function ReglagesPage() {
+export default async function ReglagesPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <main className="mx-auto flex w-full max-w-sm flex-col gap-12 px-6 py-10 pb-32">
       <div className="flex items-baseline gap-2 text-2xl">
@@ -17,6 +23,9 @@ export default function ReglagesPage() {
 
       <section className="flex flex-col gap-4">
         <h2 className="text-base font-medium text-fg">Compte</h2>
+        {user?.email && (
+          <p className="text-sm text-fg-secondary">{user.email}</p>
+        )}
         <form action={signOut} className="w-full">
           <Button type="submit" variant="primary" fullWidth>
             Se déconnecter
