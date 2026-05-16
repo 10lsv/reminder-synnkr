@@ -6,28 +6,45 @@ import { z } from "zod";
 import { RECURRENCE_VALUES } from "@/lib/recurrence";
 import { createClient } from "@/lib/supabase/server";
 
-const reminderSchema = z.object({
+const scheduledAtTransform = z
+  .string()
+  .min(1)
+  .transform((v, ctx) => {
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) {
+      ctx.addIssue({ code: "custom", message: "Date invalide" });
+      return z.NEVER;
+    }
+    return d;
+  });
+
+const categoryTransform = z
+  .string()
+  .trim()
+  .max(30)
+  .transform((v) => (v === "" ? null : v))
+  .nullable()
+  .default(null);
+
+// Création : la date doit être dans le futur. Sinon le rappel ne fire jamais.
+const createReminderSchema = z.object({
   message: z.string().trim().min(1).max(500),
-  scheduledAt: z
-    .string()
-    .min(1)
-    .transform((v, ctx) => {
-      const d = new Date(v);
-      if (Number.isNaN(d.getTime())) {
-        ctx.addIssue({ code: "custom", message: "Date invalide" });
-        return z.NEVER;
-      }
-      return d;
-    })
-    .refine((d) => d.getTime() > Date.now(), { message: "Date passée" }),
+  scheduledAt: scheduledAtTransform.refine(
+    (d) => d.getTime() > Date.now(),
+    { message: "Date passée" },
+  ),
   recurrence: z.enum(RECURRENCE_VALUES).default("none"),
-  category: z
-    .string()
-    .trim()
-    .max(30)
-    .transform((v) => (v === "" ? null : v))
-    .nullable()
-    .default(null),
+  category: categoryTransform,
+});
+
+// Update : on autorise une date passée. Cas typique = l'user édite un rappel
+// déjà fired (entré via le lien "Modifier" de l'écran rappel actif) et veut
+// juste corriger le message/catégorie sans toucher à l'heure.
+const updateReminderSchema = z.object({
+  message: z.string().trim().min(1).max(500),
+  scheduledAt: scheduledAtTransform,
+  recurrence: z.enum(RECURRENCE_VALUES).default("none"),
+  category: categoryTransform,
 });
 
 export type ReminderFormState = { error: string | null };
@@ -45,7 +62,7 @@ export async function createReminder(
   _prev: ReminderFormState,
   formData: FormData,
 ): Promise<ReminderFormState> {
-  const parsed = reminderSchema.safeParse({
+  const parsed = createReminderSchema.safeParse({
     message: formData.get("message"),
     scheduledAt: formData.get("scheduledAt"),
     recurrence: formData.get("recurrence") ?? "none",
@@ -82,7 +99,7 @@ export async function updateReminder(
   _prev: ReminderFormState,
   formData: FormData,
 ): Promise<ReminderFormState> {
-  const parsed = reminderSchema.safeParse({
+  const parsed = updateReminderSchema.safeParse({
     message: formData.get("message"),
     scheduledAt: formData.get("scheduledAt"),
     recurrence: formData.get("recurrence") ?? "none",
