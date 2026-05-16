@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { button } from "@/components/ui/Button";
+import { CategoryFilter } from "@/components/features/CategoryFilter";
 import { ReminderFilters } from "@/components/features/ReminderFilters";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { createClient } from "@/lib/supabase/server";
@@ -14,10 +15,11 @@ function parseFilter(raw: string | undefined): Filter {
 export default async function RappelsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; category?: string }>;
 }) {
-  const { filter: rawFilter } = await searchParams;
+  const { filter: rawFilter, category: rawCategory } = await searchParams;
   const filter = parseFilter(rawFilter);
+  const category = rawCategory?.trim() || null;
   const supabase = await createClient();
 
   const { count: pendingCount } = await supabase
@@ -29,12 +31,28 @@ export default async function RappelsPage({
     .from("reminders")
     .select("*", { count: "exact", head: true });
 
+  // Liste des catégories distinctes utilisées par le user (pour les chips
+  // de filtre). On lit toutes les valeurs non-null et on dédoublonne en JS,
+  // Postgres distinct via supabase-js demande un view ou rpc.
+  const { data: categoryRows } = await supabase
+    .from("reminders")
+    .select("category")
+    .not("category", "is", null);
+  const categories = Array.from(
+    new Set(
+      (categoryRows ?? [])
+        .map((r) => r.category)
+        .filter((c): c is string => Boolean(c)),
+    ),
+  ).sort();
+
   let query = supabase
     .from("reminders")
     .select("*")
     .order("scheduled_at", { ascending: true });
   if (filter === "pending") query = query.eq("status", "pending");
   else if (filter === "done") query = query.eq("status", "done");
+  if (category) query = query.eq("category", category);
 
   const { data: reminders } = await query;
   const list = reminders ?? [];
@@ -51,6 +69,8 @@ export default async function RappelsPage({
       </header>
 
       <ReminderFilters />
+
+      <CategoryFilter categories={categories} />
 
       {isEmpty ? (
         <div className="flex flex-col items-center gap-4 py-16 text-center">

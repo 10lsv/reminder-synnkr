@@ -178,10 +178,30 @@ export async function markAsDone(id: string): Promise<void> {
 
 const SNOOZE_MIN_CHARS = 10;
 const SNOOZE_MAX_CHARS = 500;
-const SNOOZE_DURATION_MS = 10 * 60 * 1000;
+// Garde-fou serveur : la durée de snooze est calculée côté client (TZ
+// utilisateur, pour "Demain 8h"), mais on borne entre 1 min et 7 jours
+// pour éviter les valeurs aberrantes.
+const SNOOZE_MIN_MS = 60 * 1000;
+const SNOOZE_MAX_MS = 7 * 24 * 60 * 60 * 1000;
 
 const snoozeSchema = z.object({
   reason: z.string().trim().min(SNOOZE_MIN_CHARS).max(SNOOZE_MAX_CHARS),
+  snoozeUntil: z
+    .string()
+    .min(1)
+    .transform((v, ctx) => {
+      const d = new Date(v);
+      if (Number.isNaN(d.getTime())) {
+        ctx.addIssue({ code: "custom", message: "Date snooze invalide" });
+        return z.NEVER;
+      }
+      const delta = d.getTime() - Date.now();
+      if (delta < SNOOZE_MIN_MS || delta > SNOOZE_MAX_MS) {
+        ctx.addIssue({ code: "custom", message: "Durée hors bornes" });
+        return z.NEVER;
+      }
+      return d;
+    }),
 });
 
 export type SnoozeFormState = { error: string | null };
@@ -191,8 +211,15 @@ export async function snoozeReminder(
   _prev: SnoozeFormState,
   formData: FormData,
 ): Promise<SnoozeFormState> {
-  const parsed = snoozeSchema.safeParse({ reason: formData.get("reason") });
+  const parsed = snoozeSchema.safeParse({
+    reason: formData.get("reason"),
+    snoozeUntil: formData.get("snoozeUntil"),
+  });
   if (!parsed.success) {
+    const flat = parsed.error.flatten().fieldErrors;
+    if (flat.snoozeUntil?.length) {
+      return { error: "Durée invalide." };
+    }
     return {
       error: `Donne une raison d'au moins ${SNOOZE_MIN_CHARS} caractères.`,
     };
@@ -214,7 +241,7 @@ export async function snoozeReminder(
   }
 
   const nowIso = new Date().toISOString();
-  const nextAtIso = new Date(Date.now() + SNOOZE_DURATION_MS).toISOString();
+  const nextAtIso = parsed.data.snoozeUntil.toISOString();
 
   const { error: insertErr } = await supabase.from("snooze_reasons").insert({
     reminder_id: id,
