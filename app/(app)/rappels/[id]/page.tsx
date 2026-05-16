@@ -49,6 +49,7 @@ export default async function RappelDetailPage({
           // ISO brut — le form le convertit en local côté client (TZ correcte).
           scheduledAt: reminder.scheduled_at,
           recurrence: toRecurrence(reminder.recurrence),
+          category: reminder.category,
         }}
         submitLabel="Enregistrer"
       />

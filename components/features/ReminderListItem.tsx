@@ -23,10 +23,18 @@ export function ReminderListItem({ reminder }: { reminder: Reminder }) {
       className="flex flex-col gap-1 border-b border-border py-4"
     >
       <p className="line-clamp-2 text-base text-fg">{reminder.message}</p>
-      <div className="flex items-center gap-2 text-sm text-fg-secondary">
+      <div className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
         <span>
           <LocalTime iso={reminder.scheduled_at} />
         </span>
+        {reminder.category && (
+          <>
+            <span aria-hidden>·</span>
+            <span className="uppercase tracking-label text-xs text-fg-tertiary">
+              {reminder.category}
+            </span>
+          </>
+        )}
         {recurrenceLabel && (
           <>
             <span aria-hidden>·</span>

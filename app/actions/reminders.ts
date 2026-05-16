@@ -21,6 +21,13 @@ const reminderSchema = z.object({
     })
     .refine((d) => d.getTime() > Date.now(), { message: "Date passée" }),
   recurrence: z.enum(RECURRENCE_VALUES).default("none"),
+  category: z
+    .string()
+    .trim()
+    .max(30)
+    .transform((v) => (v === "" ? null : v))
+    .nullable()
+    .default(null),
 });
 
 export type ReminderFormState = { error: string | null };
@@ -42,6 +49,7 @@ export async function createReminder(
     message: formData.get("message"),
     scheduledAt: formData.get("scheduledAt"),
     recurrence: formData.get("recurrence") ?? "none",
+    category: formData.get("category") ?? "",
   });
   if (!parsed.success) {
     console.warn(
@@ -57,6 +65,7 @@ export async function createReminder(
     message: parsed.data.message,
     scheduled_at: parsed.data.scheduledAt.toISOString(),
     recurrence: parsed.data.recurrence,
+    category: parsed.data.category,
   });
   if (error) {
     console.warn("[createReminder] db:", error.message);
@@ -77,6 +86,7 @@ export async function updateReminder(
     message: formData.get("message"),
     scheduledAt: formData.get("scheduledAt"),
     recurrence: formData.get("recurrence") ?? "none",
+    category: formData.get("category") ?? "",
   });
   if (!parsed.success) {
     console.warn(
@@ -103,6 +113,7 @@ export async function updateReminder(
       message: parsed.data.message,
       scheduled_at: parsed.data.scheduledAt.toISOString(),
       recurrence: parsed.data.recurrence,
+      category: parsed.data.category,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)

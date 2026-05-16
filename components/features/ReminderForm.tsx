@@ -24,9 +24,12 @@ interface ReminderFormProps {
     message: string;
     scheduledAt: string;
     recurrence?: Recurrence;
+    category?: string | null;
   };
   submitLabel?: string;
 }
+
+const CATEGORY_MAX = 30;
 
 const recurrenceChips: { value: Recurrence; label: string }[] = [
   { value: "none", label: "Ponctuel" },
@@ -83,6 +86,7 @@ export function ReminderForm({
   const [recurrence, setRecurrence] = useState<Recurrence>(
     initialData?.recurrence ?? "none",
   );
+  const [category, setCategory] = useState<string>(initialData?.category ?? "");
 
   const initialScheduledAtIso = initialData?.scheduledAt ?? null;
   useEffect(() => {
@@ -229,6 +233,17 @@ export function ReminderForm({
           })}
         </div>
         <input type="hidden" name="recurrence" value={recurrence} />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Input
+          name="category"
+          label="Catégorie (optionnel)"
+          placeholder="Perso, Boulot, Cours…"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          maxLength={CATEGORY_MAX}
+        />
       </div>
 
       <Button type="submit" variant="primary" fullWidth disabled={pending}>

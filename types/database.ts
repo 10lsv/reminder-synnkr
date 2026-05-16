@@ -67,6 +67,7 @@ export type Database = {
       }
       reminders: {
         Row: {
+          category: string | null
           created_at: string | null
           done_at: string | null
           id: string
@@ -79,6 +80,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           done_at?: string | null
           id?: string
@@ -91,6 +93,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           done_at?: string | null
           id?: string
