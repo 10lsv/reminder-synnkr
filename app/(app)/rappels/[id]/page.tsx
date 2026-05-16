@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import { updateReminder } from "@/app/actions/reminders";
+import { markAsDone, updateReminder } from "@/app/actions/reminders";
 import { DeleteReminderButton } from "@/components/features/DeleteReminderButton";
 import { ReminderForm } from "@/components/features/ReminderForm";
+import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function RappelDetailPage({
@@ -44,7 +45,18 @@ export default async function RappelDetailPage({
         submitLabel="Enregistrer"
       />
 
-      <div className="mt-4 flex justify-end border-t border-border pt-6">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+        {reminder.status === "pending" ? (
+          <form action={markAsDone.bind(null, id)}>
+            <Button type="submit" variant="primary" size="sm">
+              Marquer comme fait
+            </Button>
+          </form>
+        ) : (
+          <p className="text-sm text-fg-tertiary">
+            Ce rappel est déjà marqué fait.
+          </p>
+        )}
         <DeleteReminderButton id={id} />
       </div>
     </main>
