@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { button } from "@/components/ui/Button";
+import { LocalTime } from "@/components/features/LocalTime";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { formatRelative } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
 function extractFirstName(email: string | undefined): string {
@@ -117,7 +117,7 @@ export default async function HomePage() {
                 </p>
                 {excuse.created_at && (
                   <p className="text-xs text-fg-tertiary">
-                    {formatRelative(excuse.created_at)}
+                    <LocalTime iso={excuse.created_at} />
                   </p>
                 )}
               </li>

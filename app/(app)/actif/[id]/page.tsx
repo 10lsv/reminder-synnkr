@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { format } from "date-fns";
 import { ActiveReminderActions } from "@/components/features/ActiveReminderActions";
+import { LocalTime } from "@/components/features/LocalTime";
 import { button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,13 +27,11 @@ export default async function ActiveReminderPage({
     redirect("/");
   }
 
-  const scheduledTime = format(new Date(reminder.scheduled_at), "HH:mm");
-
   if (reminder.status === "done") {
     return (
       <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-8 px-6 py-10 text-center">
         <p className="text-xs uppercase tracking-label text-fg-tertiary">
-          Reminder · {scheduledTime}
+          Reminder · <LocalTime iso={reminder.scheduled_at} mode="time" />
         </p>
         <p className="text-xl text-fg-secondary">
           Ce rappel est déjà marqué fait.
@@ -49,7 +47,7 @@ export default async function ActiveReminderPage({
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-6 pt-10 pb-12">
       <header className="flex justify-center">
         <p className="text-xs uppercase tracking-label text-fg-tertiary">
-          Reminder · {scheduledTime}
+          Reminder · <LocalTime iso={reminder.scheduled_at} mode="time" />
         </p>
       </header>
 

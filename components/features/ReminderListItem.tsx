@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatRelative } from "@/lib/dates";
+import { LocalTime } from "@/components/features/LocalTime";
 import { recurrenceLabels } from "@/lib/recurrence";
 import type { Tables } from "@/types/database";
 
@@ -24,7 +24,9 @@ export function ReminderListItem({ reminder }: { reminder: Reminder }) {
     >
       <p className="line-clamp-2 text-base text-fg">{reminder.message}</p>
       <div className="flex items-center gap-2 text-sm text-fg-secondary">
-        <span>{formatRelative(reminder.scheduled_at)}</span>
+        <span>
+          <LocalTime iso={reminder.scheduled_at} />
+        </span>
         {recurrenceLabel && (
           <>
             <span aria-hidden>·</span>

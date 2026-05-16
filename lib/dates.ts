@@ -53,6 +53,10 @@ export function formatExact(input: Date | string): string {
   return format(toDate(input), "d MMMM yyyy 'à' HH:mm", { locale: fr });
 }
 
+export function formatTime(input: Date | string): string {
+  return format(toDate(input), "HH:mm");
+}
+
 export function formatPreview(input: Date | string): string {
   return capitalize(
     format(toDate(input), "EEEE d MMMM 'à' HH:mm", { locale: fr }),
