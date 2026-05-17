@@ -1,5 +1,6 @@
 import { createReminder } from "@/app/actions/reminders";
 import { ReminderForm } from "@/components/features/ReminderForm";
+import { listUserCategories } from "@/lib/categories";
 import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,7 +9,10 @@ export default async function NouveauRappelPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const partner = user ? await getPartner(supabase, user.id) : null;
+  const [partner, existingCategories] = await Promise.all([
+    user ? getPartner(supabase, user.id) : Promise.resolve(null),
+    listUserCategories(supabase),
+  ]);
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-10 pb-32">
@@ -22,6 +26,7 @@ export default async function NouveauRappelPage() {
       <ReminderForm
         action={createReminder}
         partnerName={partner?.display_name ?? null}
+        existingCategories={existingCategories}
         submitLabel="Programmer"
       />
     </main>

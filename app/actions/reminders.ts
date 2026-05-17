@@ -170,7 +170,7 @@ export async function updateReminder(
   revalidatePath("/rappels");
   revalidatePath(`/rappels/${id}`);
   revalidatePath("/");
-  redirect(`/rappels/${id}`);
+  redirect("/rappels");
 }
 
 export async function deleteReminder(id: string): Promise<void> {

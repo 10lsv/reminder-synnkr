@@ -30,6 +30,9 @@ interface ReminderFormProps {
     scope?: Scope;
   };
   partnerName?: string | null;
+  // Catégories déjà utilisées — rendues comme chips cliquables sous l'input
+  // pour ré-utilisation en un clic.
+  existingCategories?: string[];
   submitLabel?: string;
 }
 
@@ -75,6 +78,7 @@ export function ReminderForm({
   action,
   initialData,
   partnerName = null,
+  existingCategories = [],
   submitLabel = "Programmer",
 }: ReminderFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -250,6 +254,32 @@ export function ReminderForm({
           onChange={(e) => setCategory(e.target.value)}
           maxLength={CATEGORY_MAX}
         />
+        {existingCategories.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {existingCategories.map((c) => {
+              const active =
+                category.trim().toLowerCase() === c.toLowerCase();
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCategory(active ? "" : c)}
+                  aria-pressed={active}
+                  className={cn(
+                    "rounded-pill border px-3 py-1 text-xs uppercase tracking-label cursor-pointer touch-manipulation",
+                    "transition-colors duration-150 ease-out",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+                    active
+                      ? "border-fg bg-fg text-bg"
+                      : "border-border bg-transparent text-fg-secondary hover:border-fg-secondary",
+                  )}
+                >
+                  {c}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {partnerName && (

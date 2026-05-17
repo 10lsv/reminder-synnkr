@@ -3,6 +3,7 @@ import { markAsDone, updateReminder } from "@/app/actions/reminders";
 import { DeleteReminderButton } from "@/components/features/DeleteReminderButton";
 import { ReminderForm } from "@/components/features/ReminderForm";
 import { Button } from "@/components/ui/Button";
+import { listUserCategories } from "@/lib/categories";
 import { getPartner } from "@/lib/circle";
 import { RECURRENCE_VALUES, type Recurrence } from "@/lib/recurrence";
 import { createClient } from "@/lib/supabase/server";
@@ -37,8 +38,11 @@ export default async function RappelDetailPage({
 
   // RLS garantit déjà qu'on ne reçoit ici que les rappels qu'on peut voir
   // (own OR cercle commun). On charge le partenaire pour proposer la case
-  // à cocher avec son nom.
-  const partner = await getPartner(supabase, user.id);
+  // à cocher avec son nom + les catégories existantes pour les chips.
+  const [partner, existingCategories] = await Promise.all([
+    getPartner(supabase, user.id),
+    listUserCategories(supabase),
+  ]);
 
   const boundUpdate = updateReminder.bind(null, id);
 
@@ -51,6 +55,7 @@ export default async function RappelDetailPage({
       <ReminderForm
         action={boundUpdate}
         partnerName={partner?.display_name ?? null}
+        existingCategories={existingCategories}
         initialData={{
           message: reminder.message,
           // ISO brut — le form le convertit en local côté client (TZ correcte).
