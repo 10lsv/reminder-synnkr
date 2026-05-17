@@ -204,22 +204,11 @@ export async function updateReminder(
 }
 
 export async function deleteReminder(id: string): Promise<void> {
-  const { supabase, user } = await requireUser();
+  const { supabase } = await requireUser();
 
-  const { data: existing } = await supabase
-    .from("reminders")
-    .select("user_id")
-    .eq("id", id)
-    .maybeSingle();
-  if (!existing || existing.user_id !== user.id) {
-    redirect("/rappels");
-  }
-
-  const { error } = await supabase
-    .from("reminders")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id);
+  // RLS autorise le delete si l'user est créateur OU membre du même circle.
+  // Pas de pré-check applicatif : on laisse RLS trancher.
+  const { error } = await supabase.from("reminders").delete().eq("id", id);
   if (error) {
     console.warn("[deleteReminder] db:", error.message);
   }
@@ -229,8 +218,9 @@ export async function deleteReminder(id: string): Promise<void> {
 }
 
 export async function markAsDone(id: string): Promise<void> {
-  const { supabase, user } = await requireUser();
+  const { supabase } = await requireUser();
 
+  // RLS autorise l'update si l'user est créateur OU membre du même circle.
   const { error } = await supabase
     .from("reminders")
     .update({
@@ -238,8 +228,7 @@ export async function markAsDone(id: string): Promise<void> {
       done_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("id", id);
   if (error) {
     console.warn("[markAsDone] db:", error.message);
   }
@@ -299,13 +288,14 @@ export async function snoozeReminder(
 
   const { supabase, user } = await requireUser();
 
-  // RLS protège déjà mais on vérifie l'ownership pour renvoyer un état propre.
+  // RLS protège l'accès. On lit le rappel via la même RLS — si l'user ne
+  // peut pas le voir (ni créateur ni circle), maybeSingle renvoie null.
   const { data: existing } = await supabase
     .from("reminders")
-    .select("user_id, status")
+    .select("status")
     .eq("id", id)
     .maybeSingle();
-  if (!existing || existing.user_id !== user.id) {
+  if (!existing) {
     redirect("/");
   }
   if (existing.status === "done") {
@@ -334,8 +324,7 @@ export async function snoozeReminder(
       notified_at: null,
       updated_at: nowIso,
     })
-    .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("id", id);
   if (updateErr) {
     console.warn("[snoozeReminder] update:", updateErr.message);
     return { error: "Impossible de reprogrammer le rappel." };
