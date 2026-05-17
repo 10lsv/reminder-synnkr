@@ -5,7 +5,8 @@ import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { ReminderSearch } from "@/components/features/ReminderSearch";
 import { button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { getPartner } from "@/lib/circle";
+import { getMembersNameMap, getPartner } from "@/lib/circle";
+import { listModels } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
 
 type Filter = "pending" | "done" | "all";
@@ -19,24 +20,59 @@ function escapeIlike(q: string): string {
   return q.replace(/[%_\\]/g, (m) => `\\${m}`);
 }
 
+type AssigneeFilter = "all" | "me" | "partner" | "both";
+
 export default async function RappelsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; category?: string; q?: string }>;
+  searchParams: Promise<{
+    filter?: string;
+    category?: string;
+    q?: string;
+    model?: string;
+    priority?: string;
+    assignee?: string;
+  }>;
 }) {
   const {
     filter: rawFilter,
     category: rawCategory,
     q: rawQ,
+    model: rawModel,
+    priority: rawPriority,
+    assignee: rawAssignee,
   } = await searchParams;
   const filter = parseFilter(rawFilter);
   const category = rawCategory?.trim() || null;
   const q = rawQ?.trim() || null;
+  const modelFilter = rawModel?.trim() || null;
+  const priorityFilter = (
+    rawPriority === "urgent" || rawPriority === "low" || rawPriority === "normal"
+      ? rawPriority
+      : null
+  ) as "urgent" | "normal" | "low" | null;
+  const assigneeFilter = (
+    rawAssignee === "me" ||
+    rawAssignee === "partner" ||
+    rawAssignee === "both"
+      ? rawAssignee
+      : "all"
+  ) as AssigneeFilter;
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const partner = user ? await getPartner(supabase, user.id) : null;
+
+  const [partner, membersNameMap, allModels] = await Promise.all([
+    user ? getPartner(supabase, user.id) : Promise.resolve(null),
+    user ? getMembersNameMap(supabase, user.id) : Promise.resolve(new Map<string, string>()),
+    listModels(supabase, { includeInactive: true }),
+  ]);
+  const modelById = new Map(
+    allModels.map((m) => [m.id, { name: m.name, color: m.color }]),
+  );
+  const activeModels = allModels.filter((m) => m.status === "active");
 
   const { count: pendingCount } = await supabase
     .from("reminders")
@@ -67,6 +103,12 @@ export default async function RappelsPage({
   else if (filter === "done") query = query.eq("status", "done");
   if (category) query = query.eq("category", category);
   if (q) query = query.ilike("message", `%${escapeIlike(q)}%`);
+  if (modelFilter) query = query.eq("model_id", modelFilter);
+  if (priorityFilter) query = query.eq("priority", priorityFilter);
+  if (assigneeFilter === "me" && user) query = query.eq("assigned_to", user.id);
+  else if (assigneeFilter === "partner" && partner)
+    query = query.eq("assigned_to", partner.id);
+  else if (assigneeFilter === "both") query = query.is("assigned_to", null);
 
   const { data: reminders } = await query;
   const list = reminders ?? [];
@@ -93,6 +135,19 @@ export default async function RappelsPage({
       <div className="space-y-3">
         <ReminderSearch />
         <ReminderFilters />
+        {activeModels.length > 0 && (
+          <ModelChips
+            models={activeModels}
+            current={modelFilter}
+          />
+        )}
+        <PriorityChips current={priorityFilter} />
+        {partner && (
+          <AssigneeChips
+            current={assigneeFilter}
+            partnerName={partner.display_name ?? "Lui"}
+          />
+        )}
         <CategoryFilter categories={categories} />
       </div>
 
@@ -106,20 +161,18 @@ export default async function RappelsPage({
                 </p>
                 <Link
                   href="/rappels/nouveau"
-                  className={button({ variant: "primary", size: "sm", className: "mt-2" })}
+                  className={button({
+                    variant: "primary",
+                    size: "sm",
+                    className: "mt-2",
+                  })}
                 >
                   Créer mon premier rappel
                 </Link>
               </>
             ) : (
               <p className="text-sm text-muted-foreground">
-                {q
-                  ? `Aucun rappel ne contient « ${q} ».`
-                  : filter === "done"
-                    ? "Aucun rappel fait pour le moment."
-                    : filter === "pending"
-                      ? "Aucun rappel en attente."
-                      : "Aucun rappel."}
+                Aucun rappel ne correspond aux filtres.
               </p>
             )}
           </CardContent>
@@ -133,6 +186,9 @@ export default async function RappelsPage({
                   <ReminderListItem
                     reminder={reminder}
                     partnerName={partner?.display_name ?? null}
+                    modelById={modelById}
+                    userNameById={membersNameMap}
+                    currentUserId={user?.id}
                   />
                 </li>
               ))}
@@ -140,6 +196,104 @@ export default async function RappelsPage({
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+// Inline sub-components — petites filtres spécifiques à cette page.
+// Server components qui rendent des Link (pas besoin de client comp).
+
+function FilterLink({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-pressed={active}
+      className={
+        "rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors " +
+        (active
+          ? "border-foreground bg-foreground text-background"
+          : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground")
+      }
+    >
+      {children}
+    </Link>
+  );
+}
+
+function ModelChips({
+  models,
+  current,
+}: {
+  models: { id: string; name: string }[];
+  current: string | null;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <FilterLink href="/rappels" active={!current}>
+        Toutes models
+      </FilterLink>
+      {models.map((m) => (
+        <FilterLink
+          key={m.id}
+          href={`/rappels?model=${encodeURIComponent(m.id)}`}
+          active={current === m.id}
+        >
+          {m.name}
+        </FilterLink>
+      ))}
+    </div>
+  );
+}
+
+function PriorityChips({
+  current,
+}: {
+  current: "urgent" | "normal" | "low" | null;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <FilterLink href="/rappels" active={!current}>
+        Toutes priorités
+      </FilterLink>
+      <FilterLink href="/rappels?priority=urgent" active={current === "urgent"}>
+        Urgent
+      </FilterLink>
+      <FilterLink href="/rappels?priority=low" active={current === "low"}>
+        Low
+      </FilterLink>
+    </div>
+  );
+}
+
+function AssigneeChips({
+  current,
+  partnerName,
+}: {
+  current: AssigneeFilter;
+  partnerName: string;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <FilterLink href="/rappels" active={current === "all"}>
+        Tout le monde
+      </FilterLink>
+      <FilterLink href="/rappels?assignee=me" active={current === "me"}>
+        Moi
+      </FilterLink>
+      <FilterLink href="/rappels?assignee=partner" active={current === "partner"}>
+        {partnerName}
+      </FilterLink>
+      <FilterLink href="/rappels?assignee=both" active={current === "both"}>
+        Nous deux
+      </FilterLink>
     </div>
   );
 }

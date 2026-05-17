@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { listUserCategories } from "@/lib/categories";
 import { getPartner } from "@/lib/circle";
+import { listModels } from "@/lib/models";
 import { RECURRENCE_VALUES, type Recurrence } from "@/lib/recurrence";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,6 +14,13 @@ function toRecurrence(value: string | null | undefined): Recurrence {
   return (RECURRENCE_VALUES as readonly string[]).includes(value ?? "")
     ? (value as Recurrence)
     : "none";
+}
+
+function toPriority(
+  value: string | null | undefined,
+): "urgent" | "normal" | "low" {
+  if (value === "urgent" || value === "low") return value;
+  return "normal";
 }
 
 export default async function RappelDetailPage({
@@ -37,9 +45,10 @@ export default async function RappelDetailPage({
     redirect("/rappels");
   }
 
-  const [partner, existingCategories] = await Promise.all([
+  const [partner, existingCategories, models] = await Promise.all([
     getPartner(supabase, user.id),
     listUserCategories(supabase),
+    listModels(supabase, { includeInactive: true }),
   ]);
 
   const boundUpdate = updateReminder.bind(null, id);
@@ -57,7 +66,16 @@ export default async function RappelDetailPage({
         <CardContent>
           <ReminderForm
             action={boundUpdate}
-            partnerName={partner?.display_name ?? null}
+            partner={
+              partner
+                ? {
+                    id: partner.id,
+                    name: partner.display_name ?? "ton associé",
+                  }
+                : null
+            }
+            currentUserId={user.id}
+            models={models}
             existingCategories={existingCategories}
             initialData={{
               message: reminder.message,
@@ -65,6 +83,9 @@ export default async function RappelDetailPage({
               recurrence: toRecurrence(reminder.recurrence),
               category: reminder.category,
               scope: reminder.circle_id ? "shared" : "personal",
+              priority: toPriority(reminder.priority),
+              modelId: reminder.model_id,
+              assignedTo: reminder.assigned_to,
             }}
             submitLabel="Enregistrer"
           />

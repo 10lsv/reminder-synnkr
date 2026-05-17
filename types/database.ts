@@ -67,6 +67,50 @@ export type Database = {
         }
         Relationships: []
       }
+      models: {
+        Row: {
+          circle_id: string | null
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          owner_user_id: string | null
+          position: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          circle_id?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          owner_user_id?: string | null
+          position?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          circle_id?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_user_id?: string | null
+          position?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "models_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           circle_id: string | null
@@ -131,13 +175,16 @@ export type Database = {
       }
       reminders: {
         Row: {
+          assigned_to: string | null
           category: string | null
           circle_id: string | null
           created_at: string | null
           done_at: string | null
           id: string
           message: string
+          model_id: string | null
           notified_at: string | null
+          priority: string
           recurrence: string
           scheduled_at: string
           status: string
@@ -145,13 +192,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          assigned_to?: string | null
           category?: string | null
           circle_id?: string | null
           created_at?: string | null
           done_at?: string | null
           id?: string
           message: string
+          model_id?: string | null
           notified_at?: string | null
+          priority?: string
           recurrence?: string
           scheduled_at: string
           status?: string
@@ -159,13 +209,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          assigned_to?: string | null
           category?: string | null
           circle_id?: string | null
           created_at?: string | null
           done_at?: string | null
           id?: string
           message?: string
+          model_id?: string | null
           notified_at?: string | null
+          priority?: string
           recurrence?: string
           scheduled_at?: string
           status?: string
@@ -178,6 +231,13 @@ export type Database = {
             columns: ["circle_id"]
             isOneToOne: false
             referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
             referencedColumns: ["id"]
           },
         ]
@@ -220,6 +280,7 @@ export type Database = {
     }
     Functions: {
       accept_circle_invite: { Args: { p_token: string }; Returns: string }
+      current_user_circle_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

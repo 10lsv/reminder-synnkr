@@ -27,6 +27,19 @@ const categoryTransform = z
   .default(null);
 
 const scopeSchema = z.enum(["personal", "shared"]).default("personal");
+const prioritySchema = z
+  .enum(["urgent", "normal", "low"])
+  .default("normal");
+
+const nullableUuidTransform = z
+  .string()
+  .transform((v) => (v === "" || v === "null" ? null : v))
+  .nullable()
+  .refine(
+    (v) => v === null || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v),
+    { message: "UUID invalide" },
+  )
+  .default(null);
 
 // Création : la date doit être dans le futur. Sinon le rappel ne fire jamais.
 const createReminderSchema = z.object({
@@ -38,17 +51,20 @@ const createReminderSchema = z.object({
   recurrence: z.enum(RECURRENCE_VALUES).default("none"),
   category: categoryTransform,
   scope: scopeSchema,
+  priority: prioritySchema,
+  modelId: nullableUuidTransform,
+  assignedTo: nullableUuidTransform,
 });
 
-// Update : on autorise une date passée. Cas typique = l'user édite un rappel
-// déjà fired (entré via le lien "Modifier" de l'écran rappel actif) et veut
-// juste corriger le message/catégorie sans toucher à l'heure.
 const updateReminderSchema = z.object({
   message: z.string().trim().min(1).max(500),
   scheduledAt: scheduledAtTransform,
   recurrence: z.enum(RECURRENCE_VALUES).default("none"),
   category: categoryTransform,
   scope: scopeSchema,
+  priority: prioritySchema,
+  modelId: nullableUuidTransform,
+  assignedTo: nullableUuidTransform,
 });
 
 async function resolveCircleId(
@@ -88,6 +104,9 @@ export async function createReminder(
     recurrence: formData.get("recurrence") ?? "none",
     category: formData.get("category") ?? "",
     scope: formData.get("scope") ?? "personal",
+    priority: formData.get("priority") ?? "normal",
+    modelId: formData.get("modelId") ?? "",
+    assignedTo: formData.get("assignedTo") ?? "",
   });
   if (!parsed.success) {
     console.warn(
@@ -106,6 +125,9 @@ export async function createReminder(
     recurrence: parsed.data.recurrence,
     category: parsed.data.category,
     circle_id: circleId,
+    priority: parsed.data.priority,
+    model_id: parsed.data.modelId,
+    assigned_to: parsed.data.scope === "shared" ? parsed.data.assignedTo : null,
   });
   if (error) {
     console.warn("[createReminder] db:", error.message);
@@ -128,6 +150,9 @@ export async function updateReminder(
     recurrence: formData.get("recurrence") ?? "none",
     category: formData.get("category") ?? "",
     scope: formData.get("scope") ?? "personal",
+    priority: formData.get("priority") ?? "normal",
+    modelId: formData.get("modelId") ?? "",
+    assignedTo: formData.get("assignedTo") ?? "",
   });
   if (!parsed.success) {
     console.warn(
@@ -139,8 +164,6 @@ export async function updateReminder(
 
   const { supabase, user } = await requireUser();
 
-  // RLS autorise l'update si owner OU membre du cercle. On valide en lecture
-  // d'abord pour pouvoir retourner une erreur propre si l'user a perdu accès.
   const { data: existing } = await supabase
     .from("reminders")
     .select("id")
@@ -159,6 +182,10 @@ export async function updateReminder(
       recurrence: parsed.data.recurrence,
       category: parsed.data.category,
       circle_id: circleId,
+      priority: parsed.data.priority,
+      model_id: parsed.data.modelId,
+      assigned_to:
+        parsed.data.scope === "shared" ? parsed.data.assignedTo : null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);

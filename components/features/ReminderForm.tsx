@@ -5,6 +5,7 @@ import type { ReminderFormState } from "@/app/actions/reminders";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { modelColorClasses, toModelColor, type Model } from "@/lib/models";
 import type { Recurrence } from "@/lib/recurrence";
 import {
   formatPreview,
@@ -16,6 +17,13 @@ import {
 import { cn } from "@/lib/utils";
 
 type Scope = "personal" | "shared";
+type Priority = "urgent" | "normal" | "low";
+type AssigneeChoice = "me" | "partner" | "both";
+
+interface PartnerInfo {
+  id: string;
+  name: string;
+}
 
 interface ReminderFormProps {
   action: (
@@ -28,13 +36,37 @@ interface ReminderFormProps {
     recurrence?: Recurrence;
     category?: string | null;
     scope?: Scope;
+    priority?: Priority;
+    modelId?: string | null;
+    assignedTo?: string | null;
   };
-  partnerName?: string | null;
-  // Catégories déjà utilisées — rendues comme chips cliquables sous l'input
-  // pour ré-utilisation en un clic.
+  partner?: PartnerInfo | null;
+  currentUserId: string;
+  models?: Model[];
   existingCategories?: string[];
   submitLabel?: string;
 }
+
+const priorityChips: { value: Priority; label: string; className: string }[] = [
+  {
+    value: "urgent",
+    label: "Urgent",
+    className:
+      "border-destructive/40 bg-destructive/10 text-destructive aria-pressed:bg-destructive aria-pressed:text-destructive-foreground aria-pressed:border-destructive",
+  },
+  {
+    value: "normal",
+    label: "Normal",
+    className:
+      "border-border text-foreground aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:border-foreground",
+  },
+  {
+    value: "low",
+    label: "Low",
+    className:
+      "border-border text-muted-foreground aria-pressed:bg-muted aria-pressed:text-foreground aria-pressed:border-muted-foreground",
+  },
+];
 
 const CATEGORY_MAX = 30;
 
@@ -74,10 +106,35 @@ function detectPresetFromDate(date: Date): Preset | null {
   return null;
 }
 
+function initialAssignee(
+  scope: Scope,
+  assignedTo: string | null | undefined,
+  currentUserId: string,
+  partnerId: string | undefined,
+): AssigneeChoice {
+  if (scope !== "shared") return "me";
+  if (!assignedTo) return "both";
+  if (assignedTo === currentUserId) return "me";
+  if (partnerId && assignedTo === partnerId) return "partner";
+  return "both";
+}
+
+function resolveAssignedToId(
+  choice: AssigneeChoice,
+  currentUserId: string,
+  partnerId: string | undefined,
+): string | null {
+  if (choice === "me") return currentUserId;
+  if (choice === "partner" && partnerId) return partnerId;
+  return null;
+}
+
 export function ReminderForm({
   action,
   initialData,
-  partnerName = null,
+  partner = null,
+  currentUserId,
+  models = [],
   existingCategories = [],
   submitLabel = "Programmer",
 }: ReminderFormProps) {
@@ -97,6 +154,21 @@ export function ReminderForm({
   );
   const [category, setCategory] = useState<string>(initialData?.category ?? "");
   const [scope, setScope] = useState<Scope>(initialData?.scope ?? "personal");
+  const [priority, setPriority] = useState<Priority>(
+    initialData?.priority ?? "normal",
+  );
+  const [modelId, setModelId] = useState<string>(initialData?.modelId ?? "");
+  const [assignee, setAssignee] = useState<AssigneeChoice>(() =>
+    initialAssignee(
+      initialData?.scope ?? "personal",
+      initialData?.assignedTo,
+      currentUserId,
+      partner?.id,
+    ),
+  );
+
+  const partnerName = partner?.name ?? null;
+  const assignedToId = resolveAssignedToId(assignee, currentUserId, partner?.id);
 
   const initialScheduledAtIso = initialData?.scheduledAt ?? null;
   useEffect(() => {
@@ -282,17 +354,123 @@ export function ReminderForm({
         )}
       </div>
 
+      {models.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-foreground">Model</span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setModelId("")}
+              aria-pressed={modelId === ""}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors",
+                modelId === ""
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
+              )}
+            >
+              Aucune
+            </button>
+            {models.map((m) => {
+              const color = toModelColor(m.color);
+              const cls = modelColorClasses[color];
+              const active = modelId === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setModelId(m.id)}
+                  aria-pressed={active}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors",
+                    active
+                      ? "border-foreground bg-foreground text-background"
+                      : `${cls.chip} hover:opacity-80`,
+                  )}
+                >
+                  <span className={cn("size-2 rounded-full", cls.dot)} />
+                  {m.name}
+                </button>
+              );
+            })}
+          </div>
+          <input type="hidden" name="modelId" value={modelId} />
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-foreground">Priorité</span>
+        <div className="flex flex-wrap gap-2">
+          {priorityChips.map((chip) => {
+            const active = priority === chip.value;
+            return (
+              <button
+                key={chip.value}
+                type="button"
+                onClick={() => setPriority(chip.value)}
+                aria-pressed={active}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors",
+                  chip.className,
+                )}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+        <input type="hidden" name="priority" value={priority} />
+      </div>
+
       {partnerName && (
-        <label className="flex cursor-pointer items-center gap-3 text-base text-foreground">
-          <input
-            type="checkbox"
-            checked={scope === "shared"}
-            onChange={(e) => setScope(e.target.checked ? "shared" : "personal")}
-            className="h-5 w-5 cursor-pointer accent-fg"
-          />
-          <span>{partnerName}</span>
+        <div className="flex flex-col gap-3">
+          <label className="flex cursor-pointer items-center gap-3 text-base text-foreground">
+            <input
+              type="checkbox"
+              checked={scope === "shared"}
+              onChange={(e) =>
+                setScope(e.target.checked ? "shared" : "personal")
+              }
+              className="size-4 cursor-pointer accent-foreground"
+            />
+            <span>Partager avec {partnerName}</span>
+          </label>
           <input type="hidden" name="scope" value={scope} />
-        </label>
+
+          {scope === "shared" && (
+            <div className="flex flex-col gap-2 pl-7">
+              <span className="text-xs text-muted-foreground">Pour qui ?</span>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    { value: "me", label: "Toi" },
+                    { value: "partner", label: partnerName },
+                    { value: "both", label: "Nous deux" },
+                  ] as const
+                ).map((opt) => {
+                  const active = assignee === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setAssignee(opt.value)}
+                      aria-pressed={active}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors",
+                        active
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-transparent text-foreground hover:border-muted-foreground",
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          <input type="hidden" name="assignedTo" value={assignedToId ?? ""} />
+        </div>
       )}
 
       <Button type="submit" variant="primary" fullWidth disabled={pending}>

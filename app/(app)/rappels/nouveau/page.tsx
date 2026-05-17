@@ -1,8 +1,10 @@
+import { redirect } from "next/navigation";
 import { createReminder } from "@/app/actions/reminders";
 import { ReminderForm } from "@/components/features/ReminderForm";
 import { Card, CardContent } from "@/components/ui/Card";
 import { listUserCategories } from "@/lib/categories";
 import { getPartner } from "@/lib/circle";
+import { listModels } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function NouveauRappelPage() {
@@ -10,9 +12,12 @@ export default async function NouveauRappelPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const [partner, existingCategories] = await Promise.all([
-    user ? getPartner(supabase, user.id) : Promise.resolve(null),
+  if (!user) redirect("/login");
+
+  const [partner, existingCategories, models] = await Promise.all([
+    getPartner(supabase, user.id),
     listUserCategories(supabase),
+    listModels(supabase),
   ]);
 
   return (
@@ -28,7 +33,16 @@ export default async function NouveauRappelPage() {
         <CardContent>
           <ReminderForm
             action={createReminder}
-            partnerName={partner?.display_name ?? null}
+            partner={
+              partner
+                ? {
+                    id: partner.id,
+                    name: partner.display_name ?? "ton associé",
+                  }
+                : null
+            }
+            currentUserId={user.id}
+            models={models}
             existingCategories={existingCategories}
             submitLabel="Programmer"
           />

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
-  Calendar,
   Home,
   List,
   Settings,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ interface NavItem {
 
 const items: NavItem[] = [
   { href: "/", label: "Accueil", icon: Home },
-  { href: "/calendrier", label: "Calendrier", icon: Calendar },
+  { href: "/models", label: "Models", icon: Users },
   { href: "/rappels", label: "Liste", icon: List },
   { href: "/stats", label: "Stats", icon: BarChart3 },
   { href: "/reglages", label: "Réglages", icon: Settings },

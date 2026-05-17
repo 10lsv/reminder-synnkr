@@ -3,7 +3,8 @@ import { LocalTime } from "@/components/features/LocalTime";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { getPartner } from "@/lib/circle";
+import { getMembersNameMap, getPartner } from "@/lib/circle";
+import { listModels } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
 
 function extractFirstName(email: string | undefined): string {
@@ -18,23 +19,34 @@ export default async function HomePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const firstName = extractFirstName(user?.email);
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
+  const firstName = profile?.display_name ?? extractFirstName(user?.email);
   const nowIso = new Date().toISOString();
   const partner = user ? await getPartner(supabase, user.id) : null;
+  const partnerName = partner?.display_name ?? null;
 
   const [
     { count: totalPending },
-    { count: activeNow },
+    { data: dueRows },
     { data: upcoming },
     { data: excuses },
+    membersNameMap,
+    models,
   ] = await Promise.all([
     supabase
       .from("reminders")
       .select("*", { count: "exact", head: true })
       .eq("status", "pending"),
+    // Tous les rappels dus (pour calculer me/partner/both côté serveur).
     supabase
       .from("reminders")
-      .select("*", { count: "exact", head: true })
+      .select("id, assigned_to, circle_id, priority")
       .eq("status", "pending")
       .lte("scheduled_at", nowIso),
     supabase
@@ -49,13 +61,31 @@ export default async function HomePage() {
       .select("id, reason, created_at")
       .order("created_at", { ascending: false })
       .limit(3),
+    user
+      ? getMembersNameMap(supabase, user.id)
+      : Promise.resolve(new Map<string, string>()),
+    listModels(supabase),
   ]);
 
   const pendingTotal = totalPending ?? 0;
-  const activeCount = activeNow ?? 0;
+  const due = dueRows ?? [];
+  const dueForMe = user
+    ? due.filter(
+        (r) =>
+          r.assigned_to === user.id ||
+          (r.assigned_to === null && (r.circle_id === null || true)),
+      ).length
+    : 0;
+  const duePartner = partner
+    ? due.filter((r) => r.assigned_to === partner.id).length
+    : 0;
+  const dueUrgent = due.filter((r) => r.priority === "urgent").length;
   const upcomingList = upcoming ?? [];
   const excusesList = excuses ?? [];
   const isEmpty = pendingTotal === 0 && excusesList.length === 0;
+  const modelById = new Map(
+    models.map((m) => [m.id, { name: m.name, color: m.color }]),
+  );
 
   return (
     <div className="space-y-5">
@@ -76,12 +106,13 @@ export default async function HomePage() {
             <p className="text-sm text-muted-foreground">
               Aucun rappel pour l&apos;instant.
             </p>
-            <p className="text-xs text-muted-foreground">
-              Crée ton premier rappel pour démarrer.
-            </p>
             <Link
               href="/rappels/nouveau"
-              className={button({ variant: "primary", size: "sm", className: "mt-2" })}
+              className={button({
+                variant: "primary",
+                size: "sm",
+                className: "mt-2",
+              })}
             >
               Créer mon premier rappel
             </Link>
@@ -89,15 +120,38 @@ export default async function HomePage() {
         </Card>
       ) : (
         <Card>
-          <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
-            <span className="text-5xl font-medium leading-none tracking-tight tabular-nums">
-              {activeCount}
-            </span>
-            <p className="text-sm text-muted-foreground">
-              {activeCount > 0
-                ? `à traiter maintenant`
-                : "tout est à jour"}
-            </p>
+          <CardContent className="grid grid-cols-2 gap-4 py-6 sm:grid-cols-3">
+            <div className="flex flex-col items-center gap-1 text-center">
+              <span className="text-3xl font-medium tabular-nums">
+                {dueForMe}
+              </span>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                Pour toi
+              </p>
+            </div>
+            {partnerName && (
+              <div className="flex flex-col items-center gap-1 text-center">
+                <span className="text-3xl font-medium tabular-nums">
+                  {duePartner}
+                </span>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Pour {partnerName}
+                </p>
+              </div>
+            )}
+            <div className="flex flex-col items-center gap-1 text-center">
+              <span
+                className={
+                  "text-3xl font-medium tabular-nums " +
+                  (dueUrgent > 0 ? "text-destructive" : "")
+                }
+              >
+                {dueUrgent}
+              </span>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                Urgent
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -114,7 +168,10 @@ export default async function HomePage() {
                   <ReminderListItem
                     reminder={reminder}
                     showActions={false}
-                    partnerName={partner?.display_name ?? null}
+                    partnerName={partnerName}
+                    modelById={modelById}
+                    userNameById={membersNameMap}
+                    currentUserId={user?.id}
                   />
                 </li>
               ))}
