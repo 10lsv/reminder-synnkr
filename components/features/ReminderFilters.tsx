@@ -4,11 +4,12 @@ import { useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-type Filter = "pending" | "done" | "all";
+type Filter = "pending" | "done" | "recurring" | "all";
 
 const tabs: { value: Filter; label: string }[] = [
   { value: "pending", label: "En attente" },
   { value: "done", label: "Faits" },
+  { value: "recurring", label: "Récurrents" },
   { value: "all", label: "Tous" },
 ];
 
@@ -19,7 +20,7 @@ export function ReminderFilters() {
   const [pending, startTransition] = useTransition();
   const current = ((): Filter => {
     const raw = searchParams.get("filter");
-    if (raw === "done" || raw === "all") return raw;
+    if (raw === "done" || raw === "all" || raw === "recurring") return raw;
     return "pending";
   })();
 
@@ -40,7 +41,7 @@ export function ReminderFilters() {
     <div
       role="tablist"
       aria-label="Filtre rappels"
-      className="flex gap-6 border-b border-border"
+      className="grid grid-cols-4 gap-0 border-b border-border"
     >
       {tabs.map(({ value, label }) => {
         const active = current === value;
@@ -53,7 +54,7 @@ export function ReminderFilters() {
             disabled={pending}
             onClick={() => setFilter(value)}
             className={cn(
-              "relative pb-3 text-sm cursor-pointer touch-manipulation transition-colors duration-150 ease-out",
+              "relative pb-2.5 text-center text-sm cursor-pointer touch-manipulation transition-colors duration-150 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "disabled:cursor-not-allowed",
               active

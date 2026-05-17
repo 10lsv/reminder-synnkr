@@ -71,6 +71,7 @@ export default async function HomePage() {
       .select("*")
       .eq("status", "pending")
       .gt("scheduled_at", nowIso)
+      .order("priority", { ascending: false })
       .order("scheduled_at", { ascending: true })
       .limit(5),
     supabase

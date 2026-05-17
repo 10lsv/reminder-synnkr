@@ -36,7 +36,8 @@ export function ReminderListItem({
     reminder.recurrence !== "none"
       ? recurrenceLabels[reminder.recurrence as "daily" | "weekly" | "monthly"]
       : undefined;
-  const isUrgent = reminder.priority === "urgent";
+  const isDone = reminder.status === "done";
+  const isUrgent = reminder.priority === "urgent" && !isDone;
   const isLow = reminder.priority === "low";
   const isShared = Boolean(reminder.circle_id);
   const creatorIsMe = reminder.user_id === currentUserId;
@@ -50,6 +51,7 @@ export function ReminderListItem({
       className={cn(
         "flex items-start gap-2 border-b border-border/60 py-3 last:border-b-0",
         isUrgent && "bg-destructive/10 -mx-2 px-2 rounded-md border-transparent",
+        isDone && "bg-success/10 -mx-2 px-2 rounded-md border-transparent",
       )}
     >
       <div className="flex w-4 flex-col items-center pt-1.5">

@@ -8,10 +8,10 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { getMembersNameMap, getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
-type Filter = "pending" | "done" | "all";
+type Filter = "pending" | "done" | "recurring" | "all";
 
 function parseFilter(raw: string | undefined): Filter {
-  if (raw === "done" || raw === "all") return raw;
+  if (raw === "done" || raw === "all" || raw === "recurring") return raw;
   return "pending";
 }
 
@@ -77,12 +77,16 @@ export default async function RappelsPage({
     ),
   ).sort((a, b) => a.localeCompare(b, "fr"));
 
+  // Tri urgent-first puis date asc. Postgres ordering :
+  // priority = string lexicographic, descending → urgent > normal > low.
   let query = supabase
     .from("reminders")
     .select("*")
+    .order("priority", { ascending: false })
     .order("scheduled_at", { ascending: true });
   if (filter === "pending") query = query.eq("status", "pending");
   else if (filter === "done") query = query.eq("status", "done");
+  else if (filter === "recurring") query = query.neq("recurrence", "none");
   if (category) query = query.eq("category", category);
   if (q) query = query.ilike("message", `%${escapeIlike(q)}%`);
   if (priorityFilter) query = query.eq("priority", priorityFilter);
@@ -112,10 +116,8 @@ export default async function RappelsPage({
       <Card>
         <CardContent className="space-y-3">
           <ReminderSearch />
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <ReminderFilters />
-            <PriorityChips current={priorityFilter} />
-          </div>
+          <ReminderFilters />
+          <PriorityChips current={priorityFilter} />
           {categories.length > 0 && <CategoryFilter categories={categories} />}
         </CardContent>
       </Card>
