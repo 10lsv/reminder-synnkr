@@ -141,8 +141,7 @@ export async function createReminder(
     return { error: "Impossible de créer le rappel." };
   }
 
-  revalidatePath("/rappels");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   redirect("/rappels");
 }
 
@@ -200,9 +199,7 @@ export async function updateReminder(
     return { error: "Impossible de mettre à jour." };
   }
 
-  revalidatePath("/rappels");
-  revalidatePath(`/rappels/${id}`);
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   redirect("/rappels");
 }
 
@@ -227,8 +224,7 @@ export async function deleteReminder(id: string): Promise<void> {
     console.warn("[deleteReminder] db:", error.message);
   }
 
-  revalidatePath("/rappels");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   redirect("/rappels");
 }
 
@@ -248,8 +244,7 @@ export async function markAsDone(id: string): Promise<void> {
     console.warn("[markAsDone] db:", error.message);
   }
 
-  revalidatePath("/rappels");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   redirect("/");
 }
 
@@ -346,7 +341,6 @@ export async function snoozeReminder(
     return { error: "Impossible de reprogrammer le rappel." };
   }
 
-  revalidatePath("/rappels");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   redirect("/");
 }
