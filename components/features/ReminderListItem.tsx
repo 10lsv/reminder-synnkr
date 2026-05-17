@@ -46,7 +46,12 @@ export function ReminderListItem({
       : null;
 
   return (
-    <div className="flex items-start gap-2 border-b border-border/60 py-3 last:border-b-0">
+    <div
+      className={cn(
+        "flex items-start gap-2 border-b border-border/60 py-3 last:border-b-0",
+        isUrgent && "bg-destructive/10 -mx-2 px-2 rounded-md border-transparent",
+      )}
+    >
       <div className="flex w-4 flex-col items-center pt-1.5">
         {isUrgent ? (
           <AlertCircle

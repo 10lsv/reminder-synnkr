@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DailyProgress } from "@/components/features/DailyProgress";
 import { LocalTime } from "@/components/features/LocalTime";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { button } from "@/components/ui/Button";
@@ -31,9 +32,23 @@ export default async function HomePage() {
   const partner = user ? await getPartner(supabase, user.id) : null;
   const partnerName = partner?.display_name ?? null;
 
+  // Fenêtre "jour" élargie (-12h / +36h UTC) pour couvrir n'importe quelle
+  // TZ utilisateur. Le filtre exact en TZ navigateur se fait dans
+  // <DailyProgress />.
+  const dayWindowStart = new Date();
+  dayWindowStart.setUTCHours(0, 0, 0, 0);
+  dayWindowStart.setUTCDate(dayWindowStart.getUTCDate());
+  const dayLowerIso = new Date(
+    dayWindowStart.getTime() - 12 * 60 * 60 * 1000,
+  ).toISOString();
+  const dayUpperIso = new Date(
+    dayWindowStart.getTime() + 36 * 60 * 60 * 1000,
+  ).toISOString();
+
   const [
     { count: totalPending },
     { data: pendingRows },
+    { data: dayRows },
     { data: upcoming },
     { data: excuses },
     membersNameMap,
@@ -42,11 +57,15 @@ export default async function HomePage() {
       .from("reminders")
       .select("*", { count: "exact", head: true })
       .eq("status", "pending"),
-    // Tous les pending (peu importe la date) pour les 3 compteurs hero.
     supabase
       .from("reminders")
       .select("id, user_id, circle_id, priority")
       .eq("status", "pending"),
+    supabase
+      .from("reminders")
+      .select("id, status, scheduled_at")
+      .gte("scheduled_at", dayLowerIso)
+      .lte("scheduled_at", dayUpperIso),
     supabase
       .from("reminders")
       .select("*")
@@ -81,15 +100,10 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-5">
-      <header className="space-y-1 pt-2">
+      <header className="pt-2 text-center">
         <h1 className="text-2xl font-medium tracking-tight">
           {firstName ? `Bonjour ${firstName}` : "Tableau de bord"}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {pendingTotal > 0
-            ? `${pendingTotal} rappel${pendingTotal > 1 ? "s" : ""} en attente.`
-            : "Tu es à jour."}
-        </p>
       </header>
 
       {isEmpty ? (
@@ -111,11 +125,14 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
-          <HeroStat label="Pour toi" value={personalCount} />
-          <HeroStat label="En commun" value={sharedCount} />
-          <HeroStat label="Urgent" value={urgentCount} highlight="urgent" />
-        </div>
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            <HeroStat label="Pour toi" value={personalCount} />
+            <HeroStat label="En commun" value={sharedCount} />
+            <HeroStat label="Urgent" value={urgentCount} highlight="urgent" />
+          </div>
+          <DailyProgress rappels={dayRows ?? []} />
+        </>
       )}
 
       {upcomingList.length > 0 && (
