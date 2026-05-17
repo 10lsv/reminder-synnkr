@@ -13,9 +13,12 @@ export default async function ExcusesPage() {
   const list = excuses ?? [];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="space-y-1 pt-2">
-        <h1 className="text-2xl font-medium tracking-tight">Tes excuses</h1>
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          Archives
+        </p>
+        <h1 className="text-[26px] font-medium tracking-tight">Tes excuses</h1>
         <p className="text-sm text-muted-foreground">
           {list.length === 0
             ? "Pas encore d'excuse — tu honores tes rappels."
@@ -23,10 +26,10 @@ export default async function ExcusesPage() {
         </p>
       </header>
 
-      {list.length > 0 ? (
-        <Card>
+      {list.length > 0 && (
+        <Card padding="lg">
           <CardContent>
-            <ul className="space-y-4">
+            <ul className="space-y-0">
               {list.map((excuse) => {
                 const linkedReminder = Array.isArray(excuse.reminders)
                   ? excuse.reminders[0]
@@ -34,12 +37,12 @@ export default async function ExcusesPage() {
                 return (
                   <li
                     key={excuse.id}
-                    className="space-y-1 border-b border-border/60 pb-4 last:border-b-0 last:pb-0"
+                    className="space-y-1.5 border-b border-border/60 py-4 first:pt-0 last:border-b-0 last:pb-0"
                   >
-                    <p className="text-sm italic text-foreground">
+                    <p className="text-[15px] leading-snug italic text-foreground">
                       « {excuse.reason} »
                     </p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-muted-foreground">
                       {excuse.created_at && (
                         <span>
                           <LocalTime iso={excuse.created_at} />
@@ -63,11 +66,11 @@ export default async function ExcusesPage() {
             </ul>
           </CardContent>
         </Card>
-      ) : null}
+      )}
 
       <Link
         href="/"
-        className="inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
+        className="inline-block text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
       >
         ← Retour à l&apos;accueil
       </Link>

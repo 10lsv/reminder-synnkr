@@ -50,14 +50,18 @@ export default async function RappelDetailPage({
   ]);
 
   const boundUpdate = updateReminder.bind(null, id);
+  const isDone = reminder.status === "done";
 
   return (
-    <div className="space-y-5">
-      <header className="pt-2">
-        <h1 className="text-2xl font-medium tracking-tight">Modifier</h1>
+    <div className="space-y-6">
+      <header className="space-y-1 pt-2">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          Édition
+        </p>
+        <h1 className="text-[26px] font-medium tracking-tight">Modifier</h1>
       </header>
 
-      <Card>
+      <Card padding="lg">
         <CardContent>
           <ReminderForm
             action={boundUpdate}
@@ -83,18 +87,18 @@ export default async function RappelDetailPage({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card padding="lg">
         <CardContent className="flex flex-wrap items-center justify-between gap-3">
-          {reminder.status === "pending" ? (
+          {isDone ? (
+            <p className="text-sm text-muted-foreground">
+              Ce rappel est déjà marqué fait.
+            </p>
+          ) : (
             <form action={markAsDone.bind(null, id)}>
               <Button type="submit" variant="success" size="sm">
                 Marquer comme fait
               </Button>
             </form>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Ce rappel est déjà marqué fait.
-            </p>
           )}
           <DeleteReminderButton id={id} />
         </CardContent>

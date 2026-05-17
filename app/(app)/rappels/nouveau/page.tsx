@@ -19,15 +19,18 @@ export default async function NouveauRappelPage() {
   ]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="space-y-1 pt-2">
-        <h1 className="text-2xl font-medium tracking-tight">Nouveau rappel</h1>
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          Programmer
+        </p>
+        <h1 className="text-[26px] font-medium tracking-tight">Nouveau rappel</h1>
         <p className="text-sm text-muted-foreground">
           Écris-toi un message. Ton toi du futur le lira.
         </p>
       </header>
 
-      <Card>
+      <Card padding="lg">
         <CardContent>
           <ReminderForm
             action={createReminder}

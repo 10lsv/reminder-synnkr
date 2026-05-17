@@ -1,7 +1,7 @@
 import { signOut } from "@/app/actions/auth";
 import { NotificationsSettings } from "@/components/features/NotificationsSettings";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,45 +13,51 @@ export default async function ReglagesPage() {
   const partner = user ? await getPartner(supabase, user.id) : null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="space-y-1 pt-2">
-        <h1 className="text-2xl font-medium tracking-tight">Réglages</h1>
-        <p className="text-sm text-muted-foreground">
-          Notifications, associé et compte.
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          Préférences
         </p>
+        <h1 className="text-[26px] font-medium tracking-tight">Réglages</h1>
       </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Card padding="lg">
+        <CardContent className="space-y-4">
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            Notifications
+          </p>
           <NotificationsSettings />
         </CardContent>
       </Card>
 
       {partner && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Associé</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-foreground">
-              Tu partages tes rappels communs avec{" "}
-              <span className="font-medium">
-                {partner.display_name ?? "ton associé"}
-              </span>
-              .
+        <Card padding="lg">
+          <CardContent className="space-y-3">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Associé
             </p>
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-full bg-accent/40 text-sm font-medium text-accent-foreground">
+                {(partner.display_name ?? "?").charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 space-y-0.5">
+                <p className="text-sm font-medium">
+                  {partner.display_name ?? "Ton associé"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Tu partages les rappels marqués « commun ».
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Compte</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Card padding="lg">
+        <CardContent className="space-y-4">
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            Compte
+          </p>
           {user?.email && (
             <p className="text-sm text-muted-foreground">{user.email}</p>
           )}
