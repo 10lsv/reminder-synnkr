@@ -42,30 +42,36 @@ export function DailyProgress({ rappels }: DailyProgressProps) {
   const isComplete = stats.done === stats.total;
 
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-baseline justify-between text-xs">
-        <span className="font-medium uppercase tracking-wider text-muted-foreground">
+    <div className="space-y-3 border-t border-border/60 pt-4">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           Aujourd&apos;hui
         </span>
-        <span
-          className={cn(
-            "tabular-nums",
-            isComplete ? "text-success" : "text-muted-foreground",
-          )}
-        >
-          {stats.done} / {stats.total}
-          <span className="ml-1 text-[10px]">({pct}%)</span>
+        <span className="flex items-baseline gap-1.5 tabular-nums">
+          <span
+            className={cn(
+              "text-sm font-medium",
+              isComplete ? "text-success" : "text-foreground",
+            )}
+          >
+            {stats.done}
+            <span className="text-muted-foreground">/{stats.total}</span>
+          </span>
+          <span className="text-[10px] text-muted-foreground">{pct}%</span>
         </span>
       </div>
       <div
-        className="h-2 overflow-hidden rounded-full bg-destructive/20"
+        className="h-1.5 overflow-hidden rounded-full bg-muted"
         role="progressbar"
         aria-valuenow={pct}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         <div
-          className="h-full bg-success transition-[width] duration-300 ease-out"
+          className={cn(
+            "h-full rounded-full transition-[width] duration-500 ease-out",
+            isComplete ? "bg-success" : "bg-foreground",
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>

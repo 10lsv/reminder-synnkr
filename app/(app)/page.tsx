@@ -1,7 +1,9 @@
+import { Sparkles, User, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { DailyProgress } from "@/components/features/DailyProgress";
 import { LocalTime } from "@/components/features/LocalTime";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
+import { TodayLabel } from "@/components/features/TodayLabel";
 import { button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMembersNameMap, getPartner } from "@/lib/circle";
@@ -98,27 +100,37 @@ export default async function HomePage() {
   const upcomingList = upcoming ?? [];
   const excusesList = excuses ?? [];
   const isEmpty = pendingTotal === 0 && excusesList.length === 0;
+  const dayRowsList = dayRows ?? [];
 
   return (
-    <div className="space-y-5">
-      <header className="pt-2 text-center">
-        <h1 className="text-2xl font-medium tracking-tight">
+    <div className="space-y-6">
+      <header className="space-y-1 pt-2 text-center">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          <TodayLabel />
+        </p>
+        <h1 className="text-[26px] font-medium tracking-tight">
           {firstName ? `Bonjour ${firstName}` : "Tableau de bord"}
         </h1>
       </header>
 
       {isEmpty ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-            <p className="text-sm text-muted-foreground">
-              Aucun rappel pour l&apos;instant.
-            </p>
+        <Card padding="lg">
+          <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-accent/30">
+              <Sparkles className="size-5 text-accent-foreground" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-base font-medium">Tu es à jour</p>
+              <p className="text-sm text-muted-foreground">
+                Aucun rappel pour l&apos;instant.
+              </p>
+            </div>
             <Link
               href="/rappels/nouveau"
               className={button({
                 variant: "primary",
                 size: "sm",
-                className: "mt-2",
+                className: "mt-1",
               })}
             >
               Créer mon premier rappel
@@ -126,20 +138,35 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       ) : (
-        <>
-          <div className="grid grid-cols-3 gap-3">
-            <HeroStat label="Pour toi" value={personalCount} />
-            <HeroStat label="En commun" value={sharedCount} />
-            <HeroStat label="Urgent" value={urgentCount} highlight="urgent" />
+        <Card padding="lg" className="space-y-4">
+          <div className="grid grid-cols-3 divide-x divide-border/60">
+            <StatCell
+              icon={User}
+              label="Pour toi"
+              value={personalCount}
+            />
+            <StatCell
+              icon={Users}
+              label="En commun"
+              value={sharedCount}
+            />
+            <StatCell
+              icon={Zap}
+              label="Urgent"
+              value={urgentCount}
+              highlight={urgentCount > 0 ? "urgent" : undefined}
+            />
           </div>
-          <DailyProgress rappels={dayRows ?? []} />
-        </>
+          <DailyProgress rappels={dayRowsList} />
+        </Card>
       )}
 
       {upcomingList.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Prochains rappels</CardTitle>
+        <Card padding="lg">
+          <CardHeader className="mb-4">
+            <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em]">
+              Prochains rappels
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-0">
             <ul className="flex flex-col">
@@ -160,19 +187,21 @@ export default async function HomePage() {
       )}
 
       {excusesList.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Tes excuses</CardTitle>
+        <Card padding="lg">
+          <CardHeader className="mb-4">
+            <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em]">
+              Tes excuses
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <ul className="space-y-3">
               {excusesList.map((excuse) => (
-                <li key={excuse.id} className="space-y-0.5">
-                  <p className="text-sm italic text-foreground">
+                <li key={excuse.id} className="space-y-1">
+                  <p className="text-[15px] leading-snug italic text-foreground">
                     « {excuse.reason} »
                   </p>
                   {excuse.created_at && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
                       <LocalTime iso={excuse.created_at} />
                     </p>
                   )}
@@ -181,7 +210,7 @@ export default async function HomePage() {
             </ul>
             <Link
               href="/excuses"
-              className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+              className="inline-flex text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
               Voir toutes les excuses →
             </Link>
@@ -192,11 +221,13 @@ export default async function HomePage() {
   );
 }
 
-function HeroStat({
+function StatCell({
+  icon: Icon,
   label,
   value,
   highlight,
 }: {
+  icon: typeof User;
   label: string;
   value: number;
   highlight?: "urgent";
@@ -205,13 +236,24 @@ function HeroStat({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-4 text-center ring-1 ring-border/60",
-        isUrgent ? "bg-destructive/10 ring-destructive/30" : "bg-card",
+        "flex flex-col items-center justify-center gap-2 px-2 py-1",
+        isUrgent && "text-destructive",
       )}
     >
+      <Icon
+        className={cn(
+          "size-[18px]",
+          isUrgent
+            ? "text-destructive"
+            : value > 0
+              ? "text-foreground/80"
+              : "text-muted-foreground/60",
+        )}
+        strokeWidth={1.8}
+      />
       <span
         className={cn(
-          "text-3xl font-medium leading-none tabular-nums",
+          "text-[32px] font-medium leading-none tabular-nums tracking-tight",
           isUrgent && "text-destructive",
         )}
       >
@@ -219,7 +261,7 @@ function HeroStat({
       </span>
       <p
         className={cn(
-          "text-[10px] uppercase tracking-wider",
+          "text-[10px] font-medium uppercase tracking-[0.14em]",
           isUrgent ? "text-destructive/80" : "text-muted-foreground",
         )}
       >
