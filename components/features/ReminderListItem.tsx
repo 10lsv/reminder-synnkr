@@ -41,6 +41,8 @@ export function ReminderListItem({
   const isLow = reminder.priority === "low";
   const isShared = Boolean(reminder.circle_id);
   const creatorIsMe = reminder.user_id === currentUserId;
+  // On n'affiche le badge "par X" que si je ne suis pas le créateur — la
+  // pastille lavande indique déjà qu'il s'agit d'un rappel commun.
   const creatorName =
     isShared && !creatorIsMe
       ? userNameById?.get(reminder.user_id) ?? partnerName
@@ -49,23 +51,23 @@ export function ReminderListItem({
   return (
     <div
       className={cn(
-        "flex items-start gap-2 border-b border-border/60 py-3 last:border-b-0",
+        "flex items-center gap-2.5 border-b border-border/60 py-2.5 last:border-b-0",
         isUrgent && "bg-destructive/10 -mx-2 px-2 my-1 rounded-md border-transparent",
         isDone && "bg-success/10 -mx-2 px-2 rounded-md border-transparent",
       )}
     >
-      <div className="flex w-4 flex-col items-center pt-1.5">
+      <div className="flex w-3 flex-col items-center">
         {isUrgent ? (
           <AlertCircle
             className="size-3.5 text-destructive"
             aria-label="Urgent"
           />
         ) : isShared ? (
-          <span className="size-2 rounded-full bg-accent" aria-hidden />
+          <span className="size-1.5 rounded-full bg-accent" aria-hidden />
         ) : (
           <span
             className={cn(
-              "size-2 rounded-full",
+              "size-1.5 rounded-full",
               isLow ? "bg-muted" : "bg-muted-foreground/40",
             )}
             aria-hidden
@@ -75,18 +77,18 @@ export function ReminderListItem({
 
       <Link
         href={`/rappels/${reminder.id}`}
-        className="flex flex-1 flex-col gap-1 min-w-0"
+        className="flex flex-1 flex-col gap-0.5 min-w-0"
       >
         <p
           className={cn(
-            "line-clamp-2 text-sm",
+            "line-clamp-2 text-[14px] leading-snug",
             isLow ? "text-muted-foreground" : "text-foreground",
             isUrgent && "font-medium",
           )}
         >
           {reminder.message}
         </p>
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-muted-foreground">
           <span>
             <LocalTime iso={reminder.scheduled_at} />
           </span>
@@ -98,11 +100,11 @@ export function ReminderListItem({
               </span>
             </>
           )}
-          {isShared && (
+          {creatorName && (
             <>
               <span aria-hidden>·</span>
-              <span className="rounded-md bg-accent/40 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
-                {creatorName ? `par ${creatorName}` : "Commun"}
+              <span className="rounded bg-accent/40 px-1 text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
+                par {creatorName}
               </span>
             </>
           )}
@@ -121,7 +123,7 @@ export function ReminderListItem({
         </div>
       </Link>
       {showActions && (
-        <div className="flex items-center gap-0.5 pt-0.5">
+        <div className="flex items-center gap-0.5">
           <Link
             href={`/rappels/${reminder.id}`}
             aria-label="Modifier"
@@ -130,7 +132,7 @@ export function ReminderListItem({
               "text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
             )}
           >
-            <Pencil size={16} />
+            <Pencil size={14} />
           </Link>
           <InlineDeleteReminder id={reminder.id} />
         </div>

@@ -29,12 +29,12 @@ export function InlineDeleteReminder({ id, label = "Supprimer" }: Props) {
         aria-label={label}
         onClick={() => setConfirming(true)}
         className={cn(
-          "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full",
+          "flex h-8 w-8 cursor-pointer items-center justify-center rounded-md",
           "text-muted-foreground hover:text-destructive transition-colors duration-150 ease-out",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         )}
       >
-        <Trash2 size={18} strokeWidth={2} aria-hidden />
+        <Trash2 size={14} strokeWidth={2} aria-hidden />
       </button>
     );
   }
