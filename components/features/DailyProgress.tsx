@@ -11,11 +11,13 @@ interface DayRow {
 
 interface DailyProgressProps {
   rappels: DayRow[];
+  tone?: "light" | "dark";
 }
 
 // Compteur des rappels du jour (en TZ navigateur — donc cohérent avec
 // l'affichage). Server peut pas savoir la TZ user, donc tout se passe ici.
-export function DailyProgress({ rappels }: DailyProgressProps) {
+export function DailyProgress({ rappels, tone = "light" }: DailyProgressProps) {
+  const isDark = tone === "dark";
   const [stats, setStats] = useState<{ done: number; total: number } | null>(
     null,
   );
@@ -42,26 +44,54 @@ export function DailyProgress({ rappels }: DailyProgressProps) {
   const isComplete = stats.done === stats.total;
 
   return (
-    <div className="space-y-3 border-t border-border/60 pt-4">
+    <div
+      className={cn(
+        "space-y-3 border-t pt-4",
+        isDark ? "border-background/15" : "border-border/60",
+      )}
+    >
       <div className="flex items-baseline justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        <span
+          className={cn(
+            "text-[10px] font-medium uppercase tracking-[0.14em]",
+            isDark ? "text-background/60" : "text-muted-foreground",
+          )}
+        >
           Aujourd&apos;hui
         </span>
         <span className="flex items-baseline gap-1.5 tabular-nums">
           <span
             className={cn(
               "text-sm font-medium",
-              isComplete ? "text-success" : "text-foreground",
+              isComplete
+                ? "text-success"
+                : isDark
+                  ? "text-background"
+                  : "text-foreground",
             )}
           >
             {stats.done}
-            <span className="text-muted-foreground">/{stats.total}</span>
+            <span
+              className={cn(isDark ? "text-background/50" : "text-muted-foreground")}
+            >
+              /{stats.total}
+            </span>
           </span>
-          <span className="text-[10px] text-muted-foreground">{pct}%</span>
+          <span
+            className={cn(
+              "text-[10px]",
+              isDark ? "text-background/50" : "text-muted-foreground",
+            )}
+          >
+            {pct}%
+          </span>
         </span>
       </div>
       <div
-        className="h-1.5 overflow-hidden rounded-full bg-muted"
+        className={cn(
+          "h-1.5 overflow-hidden rounded-full",
+          isDark ? "bg-background/15" : "bg-muted",
+        )}
         role="progressbar"
         aria-valuenow={pct}
         aria-valuemin={0}
@@ -70,7 +100,11 @@ export function DailyProgress({ rappels }: DailyProgressProps) {
         <div
           className={cn(
             "h-full rounded-full transition-[width] duration-500 ease-out",
-            isComplete ? "bg-success" : "bg-foreground",
+            isComplete
+              ? "bg-success"
+              : isDark
+                ? "bg-background"
+                : "bg-foreground",
           )}
           style={{ width: `${pct}%` }}
         />

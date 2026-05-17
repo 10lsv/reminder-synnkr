@@ -140,27 +140,30 @@ export default async function HomePage() {
       ) : (
         <Card
           padding="lg"
-          className="relative space-y-5 overflow-hidden bg-gradient-to-br from-accent/12 via-card to-card p-7 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)] ring-border/40"
+          className="relative space-y-5 overflow-hidden border-0 bg-foreground p-7 text-background ring-0 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_18px_40px_-18px_rgba(0,0,0,0.45)]"
         >
-          <div className="grid grid-cols-3 divide-x divide-border/60">
+          <div className="grid grid-cols-3 divide-x divide-background/15">
             <StatCell
               icon={User}
               label="Pour toi"
               value={personalCount}
+              tone="dark"
             />
             <StatCell
               icon={Users}
               label="En commun"
               value={sharedCount}
+              tone="dark"
             />
             <StatCell
               icon={Zap}
               label="Urgent"
               value={urgentCount}
               highlight={urgentCount > 0 ? "urgent" : undefined}
+              tone="dark"
             />
           </div>
-          <DailyProgress rappels={dayRowsList} />
+          <DailyProgress rappels={dayRowsList} tone="dark" />
         </Card>
       )}
 
@@ -229,35 +232,42 @@ function StatCell({
   label,
   value,
   highlight,
+  tone = "light",
 }: {
   icon: typeof User;
   label: string;
   value: number;
   highlight?: "urgent";
+  tone?: "light" | "dark";
 }) {
   const isUrgent = highlight === "urgent" && value > 0;
+  const isDark = tone === "dark";
+  const iconColor = isUrgent
+    ? "text-destructive"
+    : isDark
+      ? value > 0
+        ? "text-accent"
+        : "text-background/35"
+      : value > 0
+        ? "text-foreground/80"
+        : "text-muted-foreground/60";
+  const valueColor = isUrgent
+    ? "text-destructive"
+    : isDark
+      ? "text-background"
+      : "text-foreground";
+  const labelColor = isUrgent
+    ? "text-destructive/80"
+    : isDark
+      ? "text-background/60"
+      : "text-muted-foreground";
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center gap-2.5 px-2 py-2",
-        isUrgent && "text-destructive",
-      )}
-    >
-      <Icon
-        className={cn(
-          "size-[20px]",
-          isUrgent
-            ? "text-destructive"
-            : value > 0
-              ? "text-foreground/80"
-              : "text-muted-foreground/60",
-        )}
-        strokeWidth={1.8}
-      />
+    <div className="flex flex-col items-center justify-center gap-2.5 px-2 py-2">
+      <Icon className={cn("size-[20px]", iconColor)} strokeWidth={1.8} />
       <span
         className={cn(
-          "text-[40px] font-medium leading-none tabular-nums tracking-tight",
-          isUrgent && "text-destructive",
+          "text-[44px] font-medium leading-none tabular-nums tracking-tight",
+          valueColor,
         )}
       >
         {value}
@@ -265,7 +275,7 @@ function StatCell({
       <p
         className={cn(
           "text-[10px] font-medium uppercase tracking-[0.14em]",
-          isUrgent ? "text-destructive/80" : "text-muted-foreground",
+          labelColor,
         )}
       >
         {label}

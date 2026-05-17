@@ -38,6 +38,9 @@ export default async function RappelsPage({
   const filter = parseFilter(rawFilter);
   const category = rawCategory?.trim() || null;
   const q = rawQ?.trim() || null;
+  // Le param `priority` reste actif côté URL (bookmarks, deep links) même si
+  // l'UI de chips a été retirée pour épurer. L'urgent reste visuellement
+  // identifiable dans la liste (fond rouge).
   const priorityFilter = (
     rawPriority === "urgent" || rawPriority === "low" || rawPriority === "normal"
       ? rawPriority
@@ -97,13 +100,16 @@ export default async function RappelsPage({
   const isFirstTime = (totalCount ?? 0) === 0;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="flex items-end justify-between gap-4 pt-2">
         <div className="space-y-1">
-          <h1 className="text-2xl font-medium tracking-tight">Tes rappels</h1>
-          <p className="text-sm text-muted-foreground">
-            <span className="tabular-nums">{pendingCount ?? 0}</span> en attente
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Mes rappels
           </p>
+          <h1 className="text-[26px] font-medium tracking-tight">
+            <span className="tabular-nums">{pendingCount ?? 0}</span>{" "}
+            <span className="text-muted-foreground">en attente</span>
+          </h1>
         </div>
         <Link
           href="/rappels/nouveau"
@@ -113,18 +119,15 @@ export default async function RappelsPage({
         </Link>
       </header>
 
-      <Card>
-        <CardContent className="space-y-3">
-          <ReminderSearch />
-          <ReminderFilters />
-          <PriorityChips current={priorityFilter} />
-          {categories.length > 0 && <CategoryFilter categories={categories} />}
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <ReminderSearch />
+        <ReminderFilters />
+        {categories.length > 0 && <CategoryFilter categories={categories} />}
+      </div>
 
       {isEmpty ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+        <Card padding="lg">
+          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
             {isFirstTime ? (
               <>
                 <p className="text-sm text-muted-foreground">
@@ -149,7 +152,7 @@ export default async function RappelsPage({
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card padding="lg">
           <CardContent className="space-y-0">
             <ul className="flex flex-col">
               {list.map((reminder) => (
@@ -166,43 +169,6 @@ export default async function RappelsPage({
           </CardContent>
         </Card>
       )}
-    </div>
-  );
-}
-
-function PriorityChips({
-  current,
-}: {
-  current: "urgent" | "normal" | "low" | null;
-}) {
-  const chips: { value: "urgent" | "low" | null; label: string }[] = [
-    { value: null, label: "Toutes" },
-    { value: "urgent", label: "Urgent" },
-    { value: "low", label: "Low" },
-  ];
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {chips.map((c) => {
-        const href =
-          c.value === null
-            ? "/rappels"
-            : `/rappels?priority=${c.value}`;
-        const active = c.value === current;
-        return (
-          <Link
-            key={c.value ?? "all"}
-            href={href}
-            className={
-              "rounded-full border px-2.5 py-0.5 text-xs transition-colors " +
-              (active
-                ? "border-foreground bg-foreground text-background"
-                : "border-border text-muted-foreground hover:border-muted-foreground")
-            }
-          >
-            {c.label}
-          </Link>
-        );
-      })}
     </div>
   );
 }
