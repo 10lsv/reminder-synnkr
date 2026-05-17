@@ -40,6 +40,14 @@ export function ReminderListItem({
           <span>
             <LocalTime iso={reminder.scheduled_at} />
           </span>
+          {reminder.circle_id && (
+            <>
+              <span aria-hidden>·</span>
+              <span className="rounded-pill border border-accent-strong bg-accent-bg px-2 py-0.5 text-xs uppercase tracking-label text-accent-strong">
+                Commun
+              </span>
+            </>
+          )}
           {reminder.category && (
             <>
               <span aria-hidden>·</span>

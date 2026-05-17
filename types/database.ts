@@ -14,23 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      circle_invites: {
+        Row: {
+          circle_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          inviter_user_id: string
+          token: string
+        }
+        Insert: {
+          circle_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          inviter_user_id: string
+          token: string
+        }
+        Update: {
+          circle_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          inviter_user_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_invites_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      circles: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          circle_id: string | null
           created_at: string | null
           display_name: string | null
           id: string
         }
         Insert: {
+          circle_id?: string | null
           created_at?: string | null
           display_name?: string | null
           id: string
         }
         Update: {
+          circle_id?: string | null
           created_at?: string | null
           display_name?: string | null
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
@@ -68,6 +132,7 @@ export type Database = {
       reminders: {
         Row: {
           category: string | null
+          circle_id: string | null
           created_at: string | null
           done_at: string | null
           id: string
@@ -81,6 +146,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          circle_id?: string | null
           created_at?: string | null
           done_at?: string | null
           id?: string
@@ -94,6 +160,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          circle_id?: string | null
           created_at?: string | null
           done_at?: string | null
           id?: string
@@ -105,7 +172,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reminders_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       snooze_reasons: {
         Row: {
@@ -144,7 +219,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_circle_invite: { Args: { p_token: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

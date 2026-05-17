@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
   const { data: due, error: selectErr } = await supabase
     .from("reminders")
-    .select("id, user_id, message, scheduled_at, recurrence")
+    .select("id, user_id, message, scheduled_at, recurrence, circle_id")
     .eq("status", "pending")
     .is("notified_at", null)
     .lte("scheduled_at", now);
@@ -54,10 +54,29 @@ Deno.serve(async (req) => {
   const expiredEndpoints: string[] = [];
 
   for (const reminder of due) {
+    // Récupère la liste des user_ids qui doivent recevoir la notif.
+    // - Rappel perso (circle_id null) : seul le créateur.
+    // - Rappel commun : tous les membres du cercle (chacun avec ses devices).
+    let recipientUserIds: string[] = [reminder.user_id];
+    if (reminder.circle_id) {
+      const { data: members, error: mErr } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("circle_id", reminder.circle_id);
+      if (mErr) {
+        console.error("[send-due-reminders] select circle members:", mErr);
+        failed++;
+        continue;
+      }
+      if (members && members.length > 0) {
+        recipientUserIds = members.map((m) => m.id);
+      }
+    }
+
     const { data: subs, error: subErr } = await supabase
       .from("push_subscriptions")
       .select("endpoint, p256dh, auth")
-      .eq("user_id", reminder.user_id);
+      .in("user_id", recipientUserIds);
 
     if (subErr) {
       console.error("[send-due-reminders] select subs:", subErr);
@@ -129,6 +148,7 @@ Deno.serve(async (req) => {
             message: reminder.message,
             scheduled_at: nextAt,
             recurrence: reminder.recurrence,
+            circle_id: reminder.circle_id,
           });
         if (insertErr) {
           console.error(

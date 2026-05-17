@@ -15,6 +15,8 @@ import {
 } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
+type Scope = "personal" | "shared";
+
 interface ReminderFormProps {
   action: (
     prevState: ReminderFormState,
@@ -25,9 +27,16 @@ interface ReminderFormProps {
     scheduledAt: string;
     recurrence?: Recurrence;
     category?: string | null;
+    scope?: Scope;
   };
+  hasCircle?: boolean;
   submitLabel?: string;
 }
+
+const scopeChips: { value: Scope; label: string }[] = [
+  { value: "personal", label: "Perso" },
+  { value: "shared", label: "Commun" },
+];
 
 const CATEGORY_MAX = 30;
 
@@ -70,6 +79,7 @@ function detectPresetFromDate(date: Date): Preset | null {
 export function ReminderForm({
   action,
   initialData,
+  hasCircle = false,
   submitLabel = "Programmer",
 }: ReminderFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -87,6 +97,7 @@ export function ReminderForm({
     initialData?.recurrence ?? "none",
   );
   const [category, setCategory] = useState<string>(initialData?.category ?? "");
+  const [scope, setScope] = useState<Scope>(initialData?.scope ?? "personal");
 
   const initialScheduledAtIso = initialData?.scheduledAt ?? null;
   useEffect(() => {
@@ -245,6 +256,36 @@ export function ReminderForm({
           maxLength={CATEGORY_MAX}
         />
       </div>
+
+      {hasCircle && (
+        <div className="flex flex-col gap-3">
+          <span className="text-base font-medium text-fg">Visibilité</span>
+          <div className="flex flex-wrap gap-2">
+            {scopeChips.map((chip) => {
+              const active = scope === chip.value;
+              return (
+                <button
+                  key={chip.value}
+                  type="button"
+                  onClick={() => setScope(chip.value)}
+                  aria-pressed={active}
+                  className={cn(
+                    "rounded-pill border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
+                    "transition-colors duration-150 ease-out",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+                    active
+                      ? "border-fg bg-fg text-bg"
+                      : "border-border bg-transparent text-fg hover:border-fg-secondary",
+                  )}
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
+          </div>
+          <input type="hidden" name="scope" value={scope} />
+        </div>
+      )}
 
       <Button type="submit" variant="primary" fullWidth disabled={pending}>
         {pending ? "Envoi…" : submitLabel}
