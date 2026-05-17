@@ -88,24 +88,14 @@ export function DailyProgress({ rappels, tone = "light" }: DailyProgressProps) {
         </span>
       </div>
       <div
-        className={cn(
-          "h-1.5 overflow-hidden rounded-full",
-          isDark ? "bg-background/15" : "bg-muted",
-        )}
+        className="h-1.5 overflow-hidden rounded-full bg-destructive"
         role="progressbar"
         aria-valuenow={pct}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         <div
-          className={cn(
-            "h-full rounded-full transition-[width] duration-500 ease-out",
-            isComplete
-              ? "bg-success"
-              : isDark
-                ? "bg-background"
-                : "bg-foreground",
-          )}
+          className="h-full rounded-full bg-success transition-[width] duration-500 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>
