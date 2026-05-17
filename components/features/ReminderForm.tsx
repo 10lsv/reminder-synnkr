@@ -5,7 +5,6 @@ import type { ReminderFormState } from "@/app/actions/reminders";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { modelColorClasses, toModelColor, type Model } from "@/lib/models";
 import type { Recurrence } from "@/lib/recurrence";
 import {
   formatPreview,
@@ -18,7 +17,6 @@ import { cn } from "@/lib/utils";
 
 type Scope = "personal" | "shared";
 type Priority = "urgent" | "normal" | "low";
-type AssigneeChoice = "me" | "partner" | "both";
 
 interface PartnerInfo {
   id: string;
@@ -37,36 +35,28 @@ interface ReminderFormProps {
     category?: string | null;
     scope?: Scope;
     priority?: Priority;
-    modelId?: string | null;
-    assignedTo?: string | null;
   };
   partner?: PartnerInfo | null;
-  currentUserId: string;
-  models?: Model[];
   existingCategories?: string[];
   submitLabel?: string;
 }
 
-const priorityChips: { value: Priority; label: string; className: string }[] = [
-  {
-    value: "urgent",
-    label: "Urgent",
-    className:
-      "border-destructive/40 bg-destructive/10 text-destructive aria-pressed:bg-destructive aria-pressed:text-destructive-foreground aria-pressed:border-destructive",
-  },
-  {
-    value: "normal",
-    label: "Normal",
-    className:
-      "border-border text-foreground aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:border-foreground",
-  },
-  {
-    value: "low",
-    label: "Low",
-    className:
-      "border-border text-muted-foreground aria-pressed:bg-muted aria-pressed:text-foreground aria-pressed:border-muted-foreground",
-  },
+const priorityChips: { value: Priority; label: string }[] = [
+  { value: "low", label: "Low" },
+  { value: "normal", label: "Normal" },
+  { value: "urgent", label: "Urgent" },
 ];
+
+function priorityActiveClass(value: Priority): string {
+  switch (value) {
+    case "urgent":
+      return "bg-destructive text-destructive-foreground border-destructive";
+    case "low":
+      return "bg-muted text-muted-foreground border-muted-foreground/40";
+    default:
+      return "bg-foreground text-background border-foreground";
+  }
+}
 
 const CATEGORY_MAX = 30;
 
@@ -87,11 +77,11 @@ type Chip =
   | { kind: "custom"; label: string };
 
 const chips: Chip[] = [
-  { kind: "preset", value: "1h", label: "Dans 1h" },
-  { kind: "preset", value: "ce-soir", label: "Ce soir 20h" },
+  { kind: "preset", value: "1h", label: "+1h" },
+  { kind: "preset", value: "ce-soir", label: "Ce soir" },
   { kind: "preset", value: "demain-8h", label: "Demain 8h" },
   { kind: "preset", value: "demain-18h", label: "Demain 18h" },
-  { kind: "custom", label: "Personnalisé" },
+  { kind: "custom", label: "Choisir" },
 ];
 
 function detectPresetFromDate(date: Date): Preset | null {
@@ -106,47 +96,26 @@ function detectPresetFromDate(date: Date): Preset | null {
   return null;
 }
 
-function initialAssignee(
-  scope: Scope,
-  assignedTo: string | null | undefined,
-  currentUserId: string,
-  partnerId: string | undefined,
-): AssigneeChoice {
-  if (scope !== "shared") return "me";
-  if (!assignedTo) return "both";
-  if (assignedTo === currentUserId) return "me";
-  if (partnerId && assignedTo === partnerId) return "partner";
-  return "both";
-}
+const ROW_CHIP_BASE =
+  "shrink-0 rounded-full border px-3 py-1.5 text-xs cursor-pointer touch-manipulation transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
-function resolveAssignedToId(
-  choice: AssigneeChoice,
-  currentUserId: string,
-  partnerId: string | undefined,
-): string | null {
-  if (choice === "me") return currentUserId;
-  if (choice === "partner" && partnerId) return partnerId;
-  return null;
-}
+const ROW_CHIP_INACTIVE =
+  "border-border bg-transparent text-foreground hover:border-muted-foreground";
+
+const ROW_CHIP_ACTIVE = "border-foreground bg-foreground text-background";
 
 export function ReminderForm({
   action,
   initialData,
   partner = null,
-  currentUserId,
-  models = [],
   existingCategories = [],
   submitLabel = "Programmer",
 }: ReminderFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const [message, setMessage] = useState(initialData?.message ?? "");
-  // État initial stable (sans Date.now()) pour que le rendu serveur == client.
-  // Les valeurs dépendantes du temps sont fixées dans le useEffect ci-dessous.
   const [selection, setSelection] = useState<Selection>(
     initialData ? "custom" : "1h",
   );
-  // SSR-stable : init vide pour éviter d'embarquer une valeur dépendant de la
-  // TZ serveur. Le useEffect ci-dessous fixe la valeur en TZ navigateur.
   const [datetimeValue, setDatetimeValue] = useState<string>("");
   const [ceSoirAvailable, setCeSoirAvailable] = useState(true);
   const [recurrence, setRecurrence] = useState<Recurrence>(
@@ -157,18 +126,8 @@ export function ReminderForm({
   const [priority, setPriority] = useState<Priority>(
     initialData?.priority ?? "normal",
   );
-  const [modelId, setModelId] = useState<string>(initialData?.modelId ?? "");
-  const [assignee, setAssignee] = useState<AssigneeChoice>(() =>
-    initialAssignee(
-      initialData?.scope ?? "personal",
-      initialData?.assignedTo,
-      currentUserId,
-      partner?.id,
-    ),
-  );
 
   const partnerName = partner?.name ?? null;
-  const assignedToId = resolveAssignedToId(assignee, currentUserId, partner?.id);
 
   const initialScheduledAtIso = initialData?.scheduledAt ?? null;
   useEffect(() => {
@@ -202,7 +161,7 @@ export function ReminderForm({
     selection !== "custom" && datetimeValue ? new Date(datetimeValue) : null;
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form action={formAction} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
         <Textarea
           name="message"
@@ -213,19 +172,16 @@ export function ReminderForm({
           maxLength={MAX}
           required
           autoFocus
-          rows={5}
+          rows={4}
         />
         <span className="self-end text-xs text-muted-foreground tabular-nums">
           {message.length}/{MAX}
         </span>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <span className="text-base font-medium text-foreground">
-          Quand t&apos;envoyer ça ?
-        </span>
-
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-foreground">Quand ?</span>
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {chips.map((chip) => {
             const active =
               chip.kind === "preset"
@@ -243,13 +199,8 @@ export function ReminderForm({
                 disabled={disabled}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-full border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
-                  "transition-colors duration-150 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  "disabled:cursor-not-allowed disabled:opacity-50",
-                  active
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border bg-transparent text-foreground hover:border-muted-foreground",
+                  ROW_CHIP_BASE,
+                  active ? ROW_CHIP_ACTIVE : ROW_CHIP_INACTIVE,
                 )}
               >
                 {chip.label}
@@ -259,7 +210,7 @@ export function ReminderForm({
         </div>
 
         {previewDate && (
-          <p className="text-sm italic text-muted-foreground">
+          <p className="text-xs italic text-muted-foreground">
             → {formatPreview(previewDate)}
           </p>
         )}
@@ -274,24 +225,16 @@ export function ReminderForm({
           />
         )}
 
-        {/*
-          datetime-local renvoie une string sans TZ. Si on l'envoie brute, le
-          serveur la parse dans SA timezone (UTC sur Vercel) — décalage de
-          plusieurs heures pour l'utilisateur. On la convertit donc en ISO
-          côté client, où new Date(...) utilise la TZ du navigateur.
-        */}
         <input
           type="hidden"
           name="scheduledAt"
-          value={
-            datetimeValue ? new Date(datetimeValue).toISOString() : ""
-          }
+          value={datetimeValue ? new Date(datetimeValue).toISOString() : ""}
         />
       </div>
 
-      <div className="flex flex-col gap-3">
-        <span className="text-base font-medium text-foreground">Répétition ?</span>
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-foreground">Répétition</span>
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {recurrenceChips.map((chip) => {
             const active = recurrence === chip.value;
             return (
@@ -301,12 +244,8 @@ export function ReminderForm({
                 onClick={() => setRecurrence(chip.value)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-full border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
-                  "transition-colors duration-150 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  active
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border bg-transparent text-foreground hover:border-muted-foreground",
+                  ROW_CHIP_BASE,
+                  active ? ROW_CHIP_ACTIVE : ROW_CHIP_INACTIVE,
                 )}
               >
                 {chip.label}
@@ -318,19 +257,45 @@ export function ReminderForm({
       </div>
 
       <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-foreground">Priorité</span>
+        <div className="grid grid-cols-3 gap-2">
+          {priorityChips.map((chip) => {
+            const active = priority === chip.value;
+            return (
+              <button
+                key={chip.value}
+                type="button"
+                onClick={() => setPriority(chip.value)}
+                aria-pressed={active}
+                className={cn(
+                  "rounded-md border px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  active
+                    ? priorityActiveClass(chip.value)
+                    : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
+                )}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+        <input type="hidden" name="priority" value={priority} />
+      </div>
+
+      <div className="flex flex-col gap-2">
         <Input
           name="category"
           label="Catégorie (optionnel)"
-          placeholder="Perso, Boulot, Cours…"
+          placeholder="Sophie, Emma, admin…"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           maxLength={CATEGORY_MAX}
         />
         {existingCategories.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {existingCategories.map((c) => {
-              const active =
-                category.trim().toLowerCase() === c.toLowerCase();
+              const active = category.trim().toLowerCase() === c.toLowerCase();
               return (
                 <button
                   key={c}
@@ -338,9 +303,7 @@ export function ReminderForm({
                   onClick={() => setCategory(active ? "" : c)}
                   aria-pressed={active}
                   className={cn(
-                    "rounded-full border px-3 py-1 text-xs uppercase tracking-wider cursor-pointer touch-manipulation",
-                    "transition-colors duration-150 ease-out",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    "shrink-0 rounded-full border px-3 py-1 text-xs uppercase tracking-wider cursor-pointer transition-colors",
                     active
                       ? "border-foreground bg-foreground text-background"
                       : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
@@ -354,123 +317,19 @@ export function ReminderForm({
         )}
       </div>
 
-      {models.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-foreground">Model</span>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setModelId("")}
-              aria-pressed={modelId === ""}
-              className={cn(
-                "rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors",
-                modelId === ""
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
-              )}
-            >
-              Aucune
-            </button>
-            {models.map((m) => {
-              const color = toModelColor(m.color);
-              const cls = modelColorClasses[color];
-              const active = modelId === m.id;
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setModelId(m.id)}
-                  aria-pressed={active}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors",
-                    active
-                      ? "border-foreground bg-foreground text-background"
-                      : `${cls.chip} hover:opacity-80`,
-                  )}
-                >
-                  <span className={cn("size-2 rounded-full", cls.dot)} />
-                  {m.name}
-                </button>
-              );
-            })}
-          </div>
-          <input type="hidden" name="modelId" value={modelId} />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-foreground">Priorité</span>
-        <div className="flex flex-wrap gap-2">
-          {priorityChips.map((chip) => {
-            const active = priority === chip.value;
-            return (
-              <button
-                key={chip.value}
-                type="button"
-                onClick={() => setPriority(chip.value)}
-                aria-pressed={active}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors",
-                  chip.className,
-                )}
-              >
-                {chip.label}
-              </button>
-            );
-          })}
-        </div>
-        <input type="hidden" name="priority" value={priority} />
-      </div>
-
       {partnerName && (
-        <div className="flex flex-col gap-3">
-          <label className="flex cursor-pointer items-center gap-3 text-base text-foreground">
-            <input
-              type="checkbox"
-              checked={scope === "shared"}
-              onChange={(e) =>
-                setScope(e.target.checked ? "shared" : "personal")
-              }
-              className="size-4 cursor-pointer accent-foreground"
-            />
-            <span>Partager avec {partnerName}</span>
-          </label>
+        <label className="flex cursor-pointer items-center gap-3 rounded-md border border-border/60 px-3 py-2 text-sm text-foreground hover:border-muted-foreground transition-colors">
+          <input
+            type="checkbox"
+            checked={scope === "shared"}
+            onChange={(e) =>
+              setScope(e.target.checked ? "shared" : "personal")
+            }
+            className="size-4 cursor-pointer accent-foreground"
+          />
+          <span>Partager avec {partnerName}</span>
           <input type="hidden" name="scope" value={scope} />
-
-          {scope === "shared" && (
-            <div className="flex flex-col gap-2 pl-7">
-              <span className="text-xs text-muted-foreground">Pour qui ?</span>
-              <div className="flex flex-wrap gap-2">
-                {(
-                  [
-                    { value: "me", label: "Toi" },
-                    { value: "partner", label: partnerName },
-                    { value: "both", label: "Nous deux" },
-                  ] as const
-                ).map((opt) => {
-                  const active = assignee === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setAssignee(opt.value)}
-                      aria-pressed={active}
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors",
-                        active
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border bg-transparent text-foreground hover:border-muted-foreground",
-                      )}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          <input type="hidden" name="assignedTo" value={assignedToId ?? ""} />
-        </div>
+        </label>
       )}
 
       <Button type="submit" variant="primary" fullWidth disabled={pending}>

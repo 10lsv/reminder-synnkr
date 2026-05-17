@@ -4,7 +4,7 @@ import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMembersNameMap, getPartner } from "@/lib/circle";
-import { listModels } from "@/lib/models";
+import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 
 function extractFirstName(email: string | undefined): string {
@@ -37,16 +37,15 @@ export default async function HomePage() {
     { data: upcoming },
     { data: excuses },
     membersNameMap,
-    models,
   ] = await Promise.all([
     supabase
       .from("reminders")
       .select("*", { count: "exact", head: true })
       .eq("status", "pending"),
-    // Tous les rappels dus (pour calculer me/partner/both côté serveur).
+    // Tous les rappels dus, pour répartir par créateur côté serveur.
     supabase
       .from("reminders")
-      .select("id, assigned_to, circle_id, priority")
+      .select("id, user_id, circle_id, priority")
       .eq("status", "pending")
       .lte("scheduled_at", nowIso),
     supabase
@@ -64,28 +63,23 @@ export default async function HomePage() {
     user
       ? getMembersNameMap(supabase, user.id)
       : Promise.resolve(new Map<string, string>()),
-    listModels(supabase),
   ]);
 
   const pendingTotal = totalPending ?? 0;
   const due = dueRows ?? [];
+  // "Pour toi" : rappels que TOI tu as créés (perso ou commun) — c'est ton
+  // backlog. "Pour {partner}" : rappels qu'IL a créés et qui sont communs
+  // donc tu les vois aussi.
   const dueForMe = user
-    ? due.filter(
-        (r) =>
-          r.assigned_to === user.id ||
-          (r.assigned_to === null && (r.circle_id === null || true)),
-      ).length
+    ? due.filter((r) => r.user_id === user.id).length
     : 0;
   const duePartner = partner
-    ? due.filter((r) => r.assigned_to === partner.id).length
+    ? due.filter((r) => r.user_id === partner.id).length
     : 0;
   const dueUrgent = due.filter((r) => r.priority === "urgent").length;
   const upcomingList = upcoming ?? [];
   const excusesList = excuses ?? [];
   const isEmpty = pendingTotal === 0 && excusesList.length === 0;
-  const modelById = new Map(
-    models.map((m) => [m.id, { name: m.name, color: m.color }]),
-  );
 
   return (
     <div className="space-y-5">
@@ -119,41 +113,14 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardContent className="grid grid-cols-2 gap-4 py-6 sm:grid-cols-3">
-            <div className="flex flex-col items-center gap-1 text-center">
-              <span className="text-3xl font-medium tabular-nums">
-                {dueForMe}
-              </span>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                Pour toi
-              </p>
-            </div>
-            {partnerName && (
-              <div className="flex flex-col items-center gap-1 text-center">
-                <span className="text-3xl font-medium tabular-nums">
-                  {duePartner}
-                </span>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Pour {partnerName}
-                </p>
-              </div>
-            )}
-            <div className="flex flex-col items-center gap-1 text-center">
-              <span
-                className={
-                  "text-3xl font-medium tabular-nums " +
-                  (dueUrgent > 0 ? "text-destructive" : "")
-                }
-              >
-                {dueUrgent}
-              </span>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                Urgent
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-3 gap-3">
+          <HeroStat label="Pour toi" value={dueForMe} />
+          <HeroStat
+            label={partnerName ? `Pour ${partnerName}` : "Communs"}
+            value={duePartner}
+          />
+          <HeroStat label="Urgent" value={dueUrgent} highlight="urgent" />
+        </div>
       )}
 
       {upcomingList.length > 0 && (
@@ -169,7 +136,6 @@ export default async function HomePage() {
                     reminder={reminder}
                     showActions={false}
                     partnerName={partnerName}
-                    modelById={modelById}
                     userNameById={membersNameMap}
                     currentUserId={user?.id}
                   />
@@ -209,6 +175,43 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+function HeroStat({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: number;
+  highlight?: "urgent";
+}) {
+  const isUrgent = highlight === "urgent" && value > 0;
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-4 text-center ring-1 ring-border/60",
+        isUrgent ? "bg-destructive/10 ring-destructive/30" : "bg-card",
+      )}
+    >
+      <span
+        className={cn(
+          "text-3xl font-medium leading-none tabular-nums",
+          isUrgent && "text-destructive",
+        )}
+      >
+        {value}
+      </span>
+      <p
+        className={cn(
+          "text-[10px] uppercase tracking-wider",
+          isUrgent ? "text-destructive/80" : "text-muted-foreground",
+        )}
+      >
+        {label}
+      </p>
     </div>
   );
 }

@@ -20,6 +20,8 @@ export const button = cva(
           "border-border bg-background text-foreground hover:bg-muted",
         ghost:
           "text-muted-foreground hover:bg-muted hover:text-foreground",
+        success:
+          "bg-success text-white hover:bg-success/90",
         danger:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:ring-destructive/20",
         link: "text-foreground underline-offset-4 hover:underline",

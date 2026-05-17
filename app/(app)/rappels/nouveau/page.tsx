@@ -4,7 +4,6 @@ import { ReminderForm } from "@/components/features/ReminderForm";
 import { Card, CardContent } from "@/components/ui/Card";
 import { listUserCategories } from "@/lib/categories";
 import { getPartner } from "@/lib/circle";
-import { listModels } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function NouveauRappelPage() {
@@ -14,10 +13,9 @@ export default async function NouveauRappelPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [partner, existingCategories, models] = await Promise.all([
+  const [partner, existingCategories] = await Promise.all([
     getPartner(supabase, user.id),
     listUserCategories(supabase),
-    listModels(supabase),
   ]);
 
   return (
@@ -41,8 +39,6 @@ export default async function NouveauRappelPage() {
                   }
                 : null
             }
-            currentUserId={user.id}
-            models={models}
             existingCategories={existingCategories}
             submitLabel="Programmer"
           />

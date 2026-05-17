@@ -34,7 +34,7 @@ export function CategoryFilter({ categories }: CategoryFilterProps) {
     <div
       role="group"
       aria-label="Filtre catégorie"
-      className="flex flex-wrap gap-2"
+      className="-mx-1 flex gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {[{ value: "", label: "Toutes" }, ...categories.map((c) => ({ value: c, label: c }))].map(
         ({ value, label }) => {
@@ -47,7 +47,7 @@ export function CategoryFilter({ categories }: CategoryFilterProps) {
               disabled={pending}
               onClick={() => setCategory(value)}
               className={cn(
-                "rounded-full border px-[12px] py-1.5 text-xs uppercase tracking-wider cursor-pointer touch-manipulation",
+                "shrink-0 rounded-full border px-2.5 py-0.5 text-xs uppercase tracking-wider cursor-pointer touch-manipulation",
                 "transition-colors duration-150 ease-out",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 "disabled:cursor-not-allowed disabled:opacity-50",

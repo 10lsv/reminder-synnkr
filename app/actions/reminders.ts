@@ -31,17 +31,6 @@ const prioritySchema = z
   .enum(["urgent", "normal", "low"])
   .default("normal");
 
-const nullableUuidTransform = z
-  .string()
-  .transform((v) => (v === "" || v === "null" ? null : v))
-  .nullable()
-  .refine(
-    (v) => v === null || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v),
-    { message: "UUID invalide" },
-  )
-  .default(null);
-
-// Création : la date doit être dans le futur. Sinon le rappel ne fire jamais.
 const createReminderSchema = z.object({
   message: z.string().trim().min(1).max(500),
   scheduledAt: scheduledAtTransform.refine(
@@ -52,8 +41,6 @@ const createReminderSchema = z.object({
   category: categoryTransform,
   scope: scopeSchema,
   priority: prioritySchema,
-  modelId: nullableUuidTransform,
-  assignedTo: nullableUuidTransform,
 });
 
 const updateReminderSchema = z.object({
@@ -63,9 +50,29 @@ const updateReminderSchema = z.object({
   category: categoryTransform,
   scope: scopeSchema,
   priority: prioritySchema,
-  modelId: nullableUuidTransform,
-  assignedTo: nullableUuidTransform,
 });
+
+// Normalise une catégorie : si le user a déjà utilisé "Cours" et qu'il
+// re-tape "cours", on utilise EXACTEMENT le casing canonique pour éviter
+// les doublons visuels dans les filtres et le combobox.
+async function canonicalizeCategory(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  raw: string | null,
+): Promise<string | null> {
+  if (!raw) return null;
+  const target = raw.trim();
+  if (!target) return null;
+  const { data } = await supabase
+    .from("reminders")
+    .select("category")
+    .ilike("category", target);
+  for (const r of data ?? []) {
+    if (r.category && r.category.toLowerCase() === target.toLowerCase()) {
+      return r.category;
+    }
+  }
+  return target;
+}
 
 async function resolveCircleId(
   scope: "personal" | "shared",
@@ -105,8 +112,6 @@ export async function createReminder(
     category: formData.get("category") ?? "",
     scope: formData.get("scope") ?? "personal",
     priority: formData.get("priority") ?? "normal",
-    modelId: formData.get("modelId") ?? "",
-    assignedTo: formData.get("assignedTo") ?? "",
   });
   if (!parsed.success) {
     console.warn(
@@ -118,16 +123,18 @@ export async function createReminder(
 
   const { supabase, user } = await requireUser();
   const circleId = await resolveCircleId(parsed.data.scope, supabase, user.id);
+  const canonicalCategory = await canonicalizeCategory(
+    supabase,
+    parsed.data.category,
+  );
   const { error } = await supabase.from("reminders").insert({
     user_id: user.id,
     message: parsed.data.message,
     scheduled_at: parsed.data.scheduledAt.toISOString(),
     recurrence: parsed.data.recurrence,
-    category: parsed.data.category,
+    category: canonicalCategory,
     circle_id: circleId,
     priority: parsed.data.priority,
-    model_id: parsed.data.modelId,
-    assigned_to: parsed.data.scope === "shared" ? parsed.data.assignedTo : null,
   });
   if (error) {
     console.warn("[createReminder] db:", error.message);
@@ -151,8 +158,6 @@ export async function updateReminder(
     category: formData.get("category") ?? "",
     scope: formData.get("scope") ?? "personal",
     priority: formData.get("priority") ?? "normal",
-    modelId: formData.get("modelId") ?? "",
-    assignedTo: formData.get("assignedTo") ?? "",
   });
   if (!parsed.success) {
     console.warn(
@@ -174,18 +179,19 @@ export async function updateReminder(
   }
 
   const circleId = await resolveCircleId(parsed.data.scope, supabase, user.id);
+  const canonicalCategory = await canonicalizeCategory(
+    supabase,
+    parsed.data.category,
+  );
   const { error } = await supabase
     .from("reminders")
     .update({
       message: parsed.data.message,
       scheduled_at: parsed.data.scheduledAt.toISOString(),
       recurrence: parsed.data.recurrence,
-      category: parsed.data.category,
+      category: canonicalCategory,
       circle_id: circleId,
       priority: parsed.data.priority,
-      model_id: parsed.data.modelId,
-      assigned_to:
-        parsed.data.scope === "shared" ? parsed.data.assignedTo : null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
