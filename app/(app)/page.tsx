@@ -3,6 +3,7 @@ import { button } from "@/components/ui/Button";
 import { LocalTime } from "@/components/features/LocalTime";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
 function extractFirstName(email: string | undefined): string {
@@ -19,6 +20,7 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   const firstName = extractFirstName(user?.email);
   const nowIso = new Date().toISOString();
+  const partner = user ? await getPartner(supabase, user.id) : null;
 
   const [
     { count: totalPending },
@@ -99,7 +101,11 @@ export default async function HomePage() {
           <ul className="flex flex-col">
             {upcomingList.map((reminder) => (
               <li key={reminder.id}>
-                <ReminderListItem reminder={reminder} showActions={false} />
+                <ReminderListItem
+                  reminder={reminder}
+                  showActions={false}
+                  partnerName={partner?.display_name ?? null}
+                />
               </li>
             ))}
           </ul>

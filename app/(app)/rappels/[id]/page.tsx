@@ -3,6 +3,7 @@ import { markAsDone, updateReminder } from "@/app/actions/reminders";
 import { DeleteReminderButton } from "@/components/features/DeleteReminderButton";
 import { ReminderForm } from "@/components/features/ReminderForm";
 import { Button } from "@/components/ui/Button";
+import { getPartner } from "@/lib/circle";
 import { RECURRENCE_VALUES, type Recurrence } from "@/lib/recurrence";
 import { createClient } from "@/lib/supabase/server";
 
@@ -35,13 +36,9 @@ export default async function RappelDetailPage({
   }
 
   // RLS garantit déjà qu'on ne reçoit ici que les rappels qu'on peut voir
-  // (own OR cercle commun). On lit le circle_id du profil pour savoir si on
-  // peut proposer Perso/Commun dans le form.
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("circle_id")
-    .eq("id", user.id)
-    .maybeSingle();
+  // (own OR cercle commun). On charge le partenaire pour proposer la case
+  // à cocher avec son nom.
+  const partner = await getPartner(supabase, user.id);
 
   const boundUpdate = updateReminder.bind(null, id);
 
@@ -53,7 +50,7 @@ export default async function RappelDetailPage({
 
       <ReminderForm
         action={boundUpdate}
-        hasCircle={Boolean(profile?.circle_id)}
+        partnerName={partner?.display_name ?? null}
         initialData={{
           message: reminder.message,
           // ISO brut — le form le convertit en local côté client (TZ correcte).

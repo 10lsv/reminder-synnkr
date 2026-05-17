@@ -17,11 +17,15 @@ const statusLabels: Record<string, string> = {
 interface ReminderListItemProps {
   reminder: Reminder;
   showActions?: boolean;
+  // Si fourni et que reminder.circle_id n'est pas null, on affiche le nom du
+  // partenaire à côté de l'heure (ex : "Aujourd'hui à 20h · Lélio").
+  partnerName?: string | null;
 }
 
 export function ReminderListItem({
   reminder,
   showActions = true,
+  partnerName = null,
 }: ReminderListItemProps) {
   const statusLabel = statusLabels[reminder.status];
   const recurrenceLabel =
@@ -40,11 +44,11 @@ export function ReminderListItem({
           <span>
             <LocalTime iso={reminder.scheduled_at} />
           </span>
-          {reminder.circle_id && (
+          {reminder.circle_id && partnerName && (
             <>
               <span aria-hidden>·</span>
               <span className="rounded-pill border border-accent-strong bg-accent-bg px-2 py-0.5 text-xs uppercase tracking-label text-accent-strong">
-                Commun
+                {partnerName}
               </span>
             </>
           )}

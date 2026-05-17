@@ -1,5 +1,6 @@
 import { createReminder } from "@/app/actions/reminders";
 import { ReminderForm } from "@/components/features/ReminderForm";
+import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function NouveauRappelPage() {
@@ -7,13 +8,7 @@ export default async function NouveauRappelPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase
-        .from("profiles")
-        .select("circle_id")
-        .eq("id", user.id)
-        .maybeSingle()
-    : { data: null };
+  const partner = user ? await getPartner(supabase, user.id) : null;
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-10 pb-32">
@@ -26,7 +21,7 @@ export default async function NouveauRappelPage() {
 
       <ReminderForm
         action={createReminder}
-        hasCircle={Boolean(profile?.circle_id)}
+        partnerName={partner?.display_name ?? null}
         submitLabel="Programmer"
       />
     </main>

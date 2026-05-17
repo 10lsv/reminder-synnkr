@@ -4,6 +4,7 @@ import { CategoryFilter } from "@/components/features/CategoryFilter";
 import { ReminderFilters } from "@/components/features/ReminderFilters";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { ReminderSearch } from "@/components/features/ReminderSearch";
+import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
 type Filter = "pending" | "done" | "all";
@@ -33,6 +34,10 @@ export default async function RappelsPage({
   const category = rawCategory?.trim() || null;
   const q = rawQ?.trim() || null;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const partner = user ? await getPartner(supabase, user.id) : null;
 
   const { count: pendingCount } = await supabase
     .from("reminders")
@@ -117,7 +122,10 @@ export default async function RappelsPage({
         <ul className="flex flex-col">
           {list.map((reminder) => (
             <li key={reminder.id}>
-              <ReminderListItem reminder={reminder} />
+              <ReminderListItem
+                reminder={reminder}
+                partnerName={partner?.display_name ?? null}
+              />
             </li>
           ))}
         </ul>

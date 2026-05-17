@@ -29,14 +29,9 @@ interface ReminderFormProps {
     category?: string | null;
     scope?: Scope;
   };
-  hasCircle?: boolean;
+  partnerName?: string | null;
   submitLabel?: string;
 }
-
-const scopeChips: { value: Scope; label: string }[] = [
-  { value: "personal", label: "Perso" },
-  { value: "shared", label: "Commun" },
-];
 
 const CATEGORY_MAX = 30;
 
@@ -79,7 +74,7 @@ function detectPresetFromDate(date: Date): Preset | null {
 export function ReminderForm({
   action,
   initialData,
-  hasCircle = false,
+  partnerName = null,
   submitLabel = "Programmer",
 }: ReminderFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -257,34 +252,17 @@ export function ReminderForm({
         />
       </div>
 
-      {hasCircle && (
-        <div className="flex flex-col gap-3">
-          <span className="text-base font-medium text-fg">Visibilité</span>
-          <div className="flex flex-wrap gap-2">
-            {scopeChips.map((chip) => {
-              const active = scope === chip.value;
-              return (
-                <button
-                  key={chip.value}
-                  type="button"
-                  onClick={() => setScope(chip.value)}
-                  aria-pressed={active}
-                  className={cn(
-                    "rounded-pill border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
-                    "transition-colors duration-150 ease-out",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
-                    active
-                      ? "border-fg bg-fg text-bg"
-                      : "border-border bg-transparent text-fg hover:border-fg-secondary",
-                  )}
-                >
-                  {chip.label}
-                </button>
-              );
-            })}
-          </div>
+      {partnerName && (
+        <label className="flex cursor-pointer items-center gap-3 text-base text-fg">
+          <input
+            type="checkbox"
+            checked={scope === "shared"}
+            onChange={(e) => setScope(e.target.checked ? "shared" : "personal")}
+            className="h-5 w-5 cursor-pointer accent-fg"
+          />
+          <span>{partnerName}</span>
           <input type="hidden" name="scope" value={scope} />
-        </div>
+        </label>
       )}
 
       <Button type="submit" variant="primary" fullWidth disabled={pending}>
