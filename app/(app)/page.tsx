@@ -138,7 +138,10 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       ) : (
-        <Card padding="lg" className="space-y-4">
+        <Card
+          padding="lg"
+          className="relative space-y-5 overflow-hidden bg-gradient-to-br from-accent/12 via-card to-card p-7 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)] ring-border/40"
+        >
           <div className="grid grid-cols-3 divide-x divide-border/60">
             <StatCell
               icon={User}
@@ -236,13 +239,13 @@ function StatCell({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-2 px-2 py-1",
+        "flex flex-col items-center justify-center gap-2.5 px-2 py-2",
         isUrgent && "text-destructive",
       )}
     >
       <Icon
         className={cn(
-          "size-[18px]",
+          "size-[20px]",
           isUrgent
             ? "text-destructive"
             : value > 0
@@ -253,7 +256,7 @@ function StatCell({
       />
       <span
         className={cn(
-          "text-[32px] font-medium leading-none tabular-nums tracking-tight",
+          "text-[40px] font-medium leading-none tabular-nums tracking-tight",
           isUrgent && "text-destructive",
         )}
       >

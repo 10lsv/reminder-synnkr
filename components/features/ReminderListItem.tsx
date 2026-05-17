@@ -50,7 +50,7 @@ export function ReminderListItem({
     <div
       className={cn(
         "flex items-start gap-2 border-b border-border/60 py-3 last:border-b-0",
-        isUrgent && "bg-destructive/10 -mx-2 px-2 rounded-md border-transparent",
+        isUrgent && "bg-destructive/10 -mx-2 px-2 my-1 rounded-md border-transparent",
         isDone && "bg-success/10 -mx-2 px-2 rounded-md border-transparent",
       )}
     >
