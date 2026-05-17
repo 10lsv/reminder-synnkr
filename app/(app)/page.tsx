@@ -33,7 +33,7 @@ export default async function HomePage() {
 
   const [
     { count: totalPending },
-    { data: dueRows },
+    { data: pendingRows },
     { data: upcoming },
     { data: excuses },
     membersNameMap,
@@ -42,12 +42,11 @@ export default async function HomePage() {
       .from("reminders")
       .select("*", { count: "exact", head: true })
       .eq("status", "pending"),
-    // Tous les rappels dus, pour répartir par créateur côté serveur.
+    // Tous les pending (peu importe la date) pour les 3 compteurs hero.
     supabase
       .from("reminders")
       .select("id, user_id, circle_id, priority")
-      .eq("status", "pending")
-      .lte("scheduled_at", nowIso),
+      .eq("status", "pending"),
     supabase
       .from("reminders")
       .select("*")
@@ -66,17 +65,16 @@ export default async function HomePage() {
   ]);
 
   const pendingTotal = totalPending ?? 0;
-  const due = dueRows ?? [];
-  // "Pour toi" : rappels que TOI tu as créés (perso ou commun) — c'est ton
-  // backlog. "Pour {partner}" : rappels qu'IL a créés et qui sont communs
-  // donc tu les vois aussi.
-  const dueForMe = user
-    ? due.filter((r) => r.user_id === user.id).length
+  const pending = pendingRows ?? [];
+  // 3 facettes orthogonales :
+  // - "Pour toi" : pending perso (pas dans le cercle commun).
+  // - "En commun" : pending communs (visibles par les deux).
+  // - "Urgent" : tous les pending dont priority = urgent (toutes scopes).
+  const personalCount = user
+    ? pending.filter((r) => !r.circle_id && r.user_id === user.id).length
     : 0;
-  const duePartner = partner
-    ? due.filter((r) => r.user_id === partner.id).length
-    : 0;
-  const dueUrgent = due.filter((r) => r.priority === "urgent").length;
+  const sharedCount = pending.filter((r) => Boolean(r.circle_id)).length;
+  const urgentCount = pending.filter((r) => r.priority === "urgent").length;
   const upcomingList = upcoming ?? [];
   const excusesList = excuses ?? [];
   const isEmpty = pendingTotal === 0 && excusesList.length === 0;
@@ -114,12 +112,9 @@ export default async function HomePage() {
         </Card>
       ) : (
         <div className="grid grid-cols-3 gap-3">
-          <HeroStat label="Pour toi" value={dueForMe} />
-          <HeroStat
-            label={partnerName ? `Pour ${partnerName}` : "Communs"}
-            value={duePartner}
-          />
-          <HeroStat label="Urgent" value={dueUrgent} highlight="urgent" />
+          <HeroStat label="Pour toi" value={personalCount} />
+          <HeroStat label="En commun" value={sharedCount} />
+          <HeroStat label="Urgent" value={urgentCount} highlight="urgent" />
         </div>
       )}
 

@@ -77,11 +77,11 @@ type Chip =
   | { kind: "custom"; label: string };
 
 const chips: Chip[] = [
-  { kind: "preset", value: "1h", label: "+1h" },
-  { kind: "preset", value: "ce-soir", label: "Ce soir" },
+  { kind: "preset", value: "1h", label: "Dans 1h" },
+  { kind: "preset", value: "ce-soir", label: "Ce soir 20h" },
   { kind: "preset", value: "demain-8h", label: "Demain 8h" },
   { kind: "preset", value: "demain-18h", label: "Demain 18h" },
-  { kind: "custom", label: "Choisir" },
+  { kind: "custom", label: "Personnalisé" },
 ];
 
 function detectPresetFromDate(date: Date): Preset | null {
