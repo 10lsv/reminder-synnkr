@@ -244,9 +244,18 @@ export function NotificationsSettings() {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-foreground">
-        Notifications activées sur cet appareil.
-      </p>
+      <div className="flex items-center gap-2">
+        <span
+          aria-hidden
+          className="relative flex size-2"
+        >
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
+          <span className="relative inline-flex size-2 rounded-full bg-success" />
+        </span>
+        <p className="text-sm text-foreground">
+          Notifications activées sur cet appareil.
+        </p>
+      </div>
       <div className="flex items-center gap-6">
         <Button
           type="button"

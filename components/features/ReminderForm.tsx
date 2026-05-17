@@ -161,7 +161,7 @@ export function ReminderForm({
     selection !== "custom" && datetimeValue ? new Date(datetimeValue) : null;
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction} className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <Textarea
           name="message"
@@ -179,8 +179,10 @@ export function ReminderForm({
         </span>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-foreground">Quand ?</span>
+      <div className="flex flex-col gap-3">
+        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          Quand ?
+        </span>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {chips.map((chip) => {
             const active =
@@ -232,8 +234,10 @@ export function ReminderForm({
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-foreground">Répétition</span>
+      <div className="flex flex-col gap-3">
+        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          Répétition
+        </span>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {recurrenceChips.map((chip) => {
             const active = recurrence === chip.value;
@@ -256,8 +260,10 @@ export function ReminderForm({
         <input type="hidden" name="recurrence" value={recurrence} />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-foreground">Priorité</span>
+      <div className="flex flex-col gap-3">
+        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          Priorité
+        </span>
         <div className="grid grid-cols-3 gap-2">
           {priorityChips.map((chip) => {
             const active = priority === chip.value;
