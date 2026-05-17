@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Reminder",
     short_name: "Reminder",
     description: "Un message de ton toi passé à ton toi présent.",
-    start_url: "/rappels",
+    start_url: "/",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
