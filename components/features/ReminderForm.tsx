@@ -143,13 +143,13 @@ export function ReminderForm({
           autoFocus
           rows={5}
         />
-        <span className="self-end text-xs text-fg-tertiary tabular-nums">
+        <span className="self-end text-xs text-muted-foreground tabular-nums">
           {message.length}/{MAX}
         </span>
       </div>
 
       <div className="flex flex-col gap-3">
-        <span className="text-base font-medium text-fg">
+        <span className="text-base font-medium text-foreground">
           Quand t&apos;envoyer ça ?
         </span>
 
@@ -171,13 +171,13 @@ export function ReminderForm({
                 disabled={disabled}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-pill border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
+                  "rounded-full border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
                   "transition-colors duration-150 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   "disabled:cursor-not-allowed disabled:opacity-50",
                   active
-                    ? "border-fg bg-fg text-bg"
-                    : "border-border bg-transparent text-fg hover:border-fg-secondary",
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-transparent text-foreground hover:border-muted-foreground",
                 )}
               >
                 {chip.label}
@@ -187,7 +187,7 @@ export function ReminderForm({
         </div>
 
         {previewDate && (
-          <p className="text-sm italic text-fg-tertiary">
+          <p className="text-sm italic text-muted-foreground">
             → {formatPreview(previewDate)}
           </p>
         )}
@@ -218,7 +218,7 @@ export function ReminderForm({
       </div>
 
       <div className="flex flex-col gap-3">
-        <span className="text-base font-medium text-fg">Répétition ?</span>
+        <span className="text-base font-medium text-foreground">Répétition ?</span>
         <div className="flex flex-wrap gap-2">
           {recurrenceChips.map((chip) => {
             const active = recurrence === chip.value;
@@ -229,12 +229,12 @@ export function ReminderForm({
                 onClick={() => setRecurrence(chip.value)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-pill border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
+                  "rounded-full border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
                   "transition-colors duration-150 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   active
-                    ? "border-fg bg-fg text-bg"
-                    : "border-border bg-transparent text-fg hover:border-fg-secondary",
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-transparent text-foreground hover:border-muted-foreground",
                 )}
               >
                 {chip.label}
@@ -266,12 +266,12 @@ export function ReminderForm({
                   onClick={() => setCategory(active ? "" : c)}
                   aria-pressed={active}
                   className={cn(
-                    "rounded-pill border px-3 py-1 text-xs uppercase tracking-label cursor-pointer touch-manipulation",
+                    "rounded-full border px-3 py-1 text-xs uppercase tracking-wider cursor-pointer touch-manipulation",
                     "transition-colors duration-150 ease-out",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     active
-                      ? "border-fg bg-fg text-bg"
-                      : "border-border bg-transparent text-fg-secondary hover:border-fg-secondary",
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
                   )}
                 >
                   {c}
@@ -283,7 +283,7 @@ export function ReminderForm({
       </div>
 
       {partnerName && (
-        <label className="flex cursor-pointer items-center gap-3 text-base text-fg">
+        <label className="flex cursor-pointer items-center gap-3 text-base text-foreground">
           <input
             type="checkbox"
             checked={scope === "shared"}
@@ -300,7 +300,7 @@ export function ReminderForm({
       </Button>
 
       {state.error && (
-        <p role="alert" className="text-center text-sm text-danger">
+        <p role="alert" className="text-center text-sm text-destructive">
           {state.error}
         </p>
       )}

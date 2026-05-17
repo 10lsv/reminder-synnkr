@@ -1,4 +1,4 @@
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { computeStreaks } from "@/lib/streaks";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,47 +12,56 @@ export default async function StatsPage() {
   const stats = computeStreaks((doneRows ?? []).map((r) => r.done_at));
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-12 px-6 py-10 pb-32">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-fg">Stats</h1>
+    <div className="space-y-5">
+      <header className="space-y-1 pt-2">
+        <h1 className="text-2xl font-medium tracking-tight">Stats</h1>
+        <p className="text-sm text-muted-foreground">
+          Tes séries et compteurs.
+        </p>
       </header>
 
-      <section className="flex flex-col items-center gap-3 py-4">
-        <span className="text-hero font-bold leading-none tracking-tight text-fg tabular-nums">
-          {stats.current}
-        </span>
-        <SectionLabel withDot>Jours d&apos;affilée</SectionLabel>
-        {stats.current === 0 ? (
-          <p className="text-center text-sm text-fg-secondary">
-            Marque un rappel comme fait aujourd&apos;hui pour lancer la série.
+      <Card>
+        <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
+          <span className="text-5xl font-medium leading-none tracking-tight tabular-nums">
+            {stats.current}
+          </span>
+          <p className="text-sm text-muted-foreground">
+            jour{stats.current > 1 ? "s" : ""} d&apos;affilée
           </p>
-        ) : (
-          <p className="text-center text-sm text-fg-secondary">
-            Continue demain pour grimper.
+          <p className="mt-3 max-w-xs text-xs text-muted-foreground">
+            {stats.current === 0
+              ? "Marque un rappel comme fait aujourd'hui pour lancer la série."
+              : "Continue demain pour grimper."}
           </p>
-        )}
-      </section>
+        </CardContent>
+      </Card>
 
-      <section className="flex flex-col gap-4">
-        <SectionLabel withDot>Compteurs</SectionLabel>
-        <ul className="flex flex-col gap-3">
-          <li className="flex items-baseline justify-between border-b border-border pb-3">
-            <span className="text-sm text-fg-secondary">Plus longue série</span>
-            <span className="text-lg font-medium text-fg tabular-nums">
-              {stats.longest}{" "}
-              <span className="text-sm font-normal text-fg-tertiary">
-                jour{stats.longest > 1 ? "s" : ""}
+      <Card>
+        <CardHeader>
+          <CardTitle>Compteurs</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-3">
+            <li className="flex items-baseline justify-between border-b border-border/60 pb-3">
+              <span className="text-sm text-muted-foreground">
+                Plus longue série
               </span>
-            </span>
-          </li>
-          <li className="flex items-baseline justify-between">
-            <span className="text-sm text-fg-secondary">Total faits</span>
-            <span className="text-lg font-medium text-fg tabular-nums">
-              {stats.totalDone}
-            </span>
-          </li>
-        </ul>
-      </section>
-    </main>
+              <span className="text-base font-medium tabular-nums">
+                {stats.longest}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  jour{stats.longest > 1 ? "s" : ""}
+                </span>
+              </span>
+            </li>
+            <li className="flex items-baseline justify-between">
+              <span className="text-sm text-muted-foreground">Total faits</span>
+              <span className="text-base font-medium tabular-nums">
+                {stats.totalDone}
+              </span>
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -13,15 +13,13 @@ export function SectionLabel({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 text-xs uppercase tracking-label text-fg-tertiary",
+        "inline-flex items-center gap-2 text-sm font-medium text-muted-foreground",
         className,
       )}
       {...props}
     >
       {withDot && (
-        <span aria-hidden className="text-accent leading-none">
-          ●
-        </span>
+        <span aria-hidden className="size-1.5 rounded-full bg-accent" />
       )}
       <span>{children}</span>
     </div>

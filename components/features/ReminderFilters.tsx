@@ -54,18 +54,18 @@ export function ReminderFilters() {
             onClick={() => setFilter(value)}
             className={cn(
               "relative pb-3 text-sm cursor-pointer touch-manipulation transition-colors duration-150 ease-out",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "disabled:cursor-not-allowed",
               active
-                ? "font-medium text-fg"
-                : "font-normal text-fg-secondary hover:text-fg",
+                ? "font-medium text-foreground"
+                : "font-normal text-muted-foreground hover:text-foreground",
             )}
           >
             {label}
             {active && (
               <span
                 aria-hidden
-                className="absolute inset-x-0 -bottom-px h-[2px] bg-fg"
+                className="absolute inset-x-0 -bottom-px h-[2px] bg-foreground"
               />
             )}
           </button>

@@ -8,8 +8,8 @@ export default function DevPage() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-12 px-6 py-10 pb-32">
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-fg">Design system — /dev</h1>
-        <p className="text-sm text-fg-secondary">
+        <h1 className="text-2xl font-bold text-foreground">Design system — /dev</h1>
+        <p className="text-sm text-muted-foreground">
           Showcase Phase 2. Page temporaire, sera supprimée plus tard.
         </p>
       </header>
@@ -27,15 +27,15 @@ export default function DevPage() {
       <section className="flex flex-col gap-4">
         <SectionLabel withDot>Card</SectionLabel>
         <Card>
-          <p className="text-base text-fg">
+          <p className="text-base text-foreground">
             Padding par défaut (24px). Border 1px, radius 16px, aucune ombre.
           </p>
         </Card>
         <Card padding="sm">
-          <p className="text-base text-fg">Padding sm (16px).</p>
+          <p className="text-base text-foreground">Padding sm (16px).</p>
         </Card>
         <Card padding="lg">
-          <p className="text-base text-fg">Padding lg (32px).</p>
+          <p className="text-base text-foreground">Padding lg (32px).</p>
         </Card>
       </section>
 
@@ -102,7 +102,7 @@ export default function DevPage() {
       {/* NavBottom note */}
       <section className="flex flex-col gap-4">
         <SectionLabel withDot>NavBottom</SectionLabel>
-        <p className="text-sm text-fg-secondary">
+        <p className="text-sm text-muted-foreground">
           Désormais fournie par le layout <code>(app)</code>. Visible en bas de
           cette page. L&apos;item actif (cercle violet pâle) correspond au
           pathname courant.

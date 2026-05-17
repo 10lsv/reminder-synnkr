@@ -29,9 +29,9 @@ export function InlineDeleteReminder({ id, label = "Supprimer" }: Props) {
         aria-label={label}
         onClick={() => setConfirming(true)}
         className={cn(
-          "flex h-9 w-9 cursor-pointer items-center justify-center rounded-pill",
-          "text-fg-secondary hover:text-danger transition-colors duration-150 ease-out",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+          "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full",
+          "text-muted-foreground hover:text-destructive transition-colors duration-150 ease-out",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         )}
       >
         <Trash2 size={18} strokeWidth={2} aria-hidden />
@@ -45,7 +45,7 @@ export function InlineDeleteReminder({ id, label = "Supprimer" }: Props) {
         type="button"
         onClick={() => setConfirming(false)}
         disabled={pending}
-        className="cursor-pointer text-sm text-fg-secondary underline-offset-4 hover:underline"
+        className="cursor-pointer text-sm text-muted-foreground underline-offset-4 hover:underline"
       >
         Annuler
       </button>
@@ -57,7 +57,7 @@ export function InlineDeleteReminder({ id, label = "Supprimer" }: Props) {
             await deleteReminder(id);
           })
         }
-        className="cursor-pointer text-sm text-danger underline-offset-4 hover:underline"
+        className="cursor-pointer text-sm text-destructive underline-offset-4 hover:underline"
       >
         {pending ? "…" : "Confirmer"}
       </button>

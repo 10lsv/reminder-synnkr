@@ -38,15 +38,15 @@ export function IOSInstallPrompt() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-6 pt-6">
-      <div className="rounded-lg border border-accent-strong bg-accent-bg p-5">
-        <p className="text-base font-semibold text-fg">
+      <div className="rounded-lg border border-accent bg-accent/30 p-5">
+        <p className="text-base font-semibold text-foreground">
           Installe Reminder pour recevoir tes notifs
         </p>
-        <p className="mt-2 text-sm text-fg-secondary">
+        <p className="mt-2 text-sm text-muted-foreground">
           Sur iPhone, les rappels n&apos;arrivent que si l&apos;app est ajoutée
           à ton écran d&apos;accueil.
         </p>
-        <ol className="mt-4 flex list-decimal flex-col gap-2 pl-5 text-sm text-fg">
+        <ol className="mt-4 flex list-decimal flex-col gap-2 pl-5 text-sm text-foreground">
           <li>Touche l&apos;icône Partager de Safari (en bas de l&apos;écran)</li>
           <li>Choisis « Ajouter à l&apos;écran d&apos;accueil »</li>
           <li>Ouvre Reminder depuis la nouvelle icône</li>

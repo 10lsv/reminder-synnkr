@@ -34,7 +34,7 @@ export function LoginForm() {
         {pending ? "Connexion…" : "Se connecter"}
       </Button>
       {state.error && (
-        <p role="alert" className="text-center text-sm text-danger">
+        <p role="alert" className="text-center text-sm text-destructive">
           {state.error}
         </p>
       )}

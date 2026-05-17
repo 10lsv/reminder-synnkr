@@ -3,6 +3,7 @@ import { markAsDone, updateReminder } from "@/app/actions/reminders";
 import { DeleteReminderButton } from "@/components/features/DeleteReminderButton";
 import { ReminderForm } from "@/components/features/ReminderForm";
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
 import { listUserCategories } from "@/lib/categories";
 import { getPartner } from "@/lib/circle";
 import { RECURRENCE_VALUES, type Recurrence } from "@/lib/recurrence";
@@ -36,9 +37,6 @@ export default async function RappelDetailPage({
     redirect("/rappels");
   }
 
-  // RLS garantit déjà qu'on ne reçoit ici que les rappels qu'on peut voir
-  // (own OR cercle commun). On charge le partenaire pour proposer la case
-  // à cocher avec son nom + les catégories existantes pour les chips.
   const [partner, existingCategories] = await Promise.all([
     getPartner(supabase, user.id),
     listUserCategories(supabase),
@@ -47,40 +45,48 @@ export default async function RappelDetailPage({
   const boundUpdate = updateReminder.bind(null, id);
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-10 pb-32">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-fg">Modifier</h1>
+    <div className="space-y-5">
+      <header className="space-y-1 pt-2">
+        <h1 className="text-2xl font-medium tracking-tight">Modifier</h1>
+        <p className="text-sm text-muted-foreground">
+          Ajuste ton rappel — ce qui change s&apos;applique immédiatement.
+        </p>
       </header>
 
-      <ReminderForm
-        action={boundUpdate}
-        partnerName={partner?.display_name ?? null}
-        existingCategories={existingCategories}
-        initialData={{
-          message: reminder.message,
-          // ISO brut — le form le convertit en local côté client (TZ correcte).
-          scheduledAt: reminder.scheduled_at,
-          recurrence: toRecurrence(reminder.recurrence),
-          category: reminder.category,
-          scope: reminder.circle_id ? "shared" : "personal",
-        }}
-        submitLabel="Enregistrer"
-      />
+      <Card>
+        <CardContent>
+          <ReminderForm
+            action={boundUpdate}
+            partnerName={partner?.display_name ?? null}
+            existingCategories={existingCategories}
+            initialData={{
+              message: reminder.message,
+              scheduledAt: reminder.scheduled_at,
+              recurrence: toRecurrence(reminder.recurrence),
+              category: reminder.category,
+              scope: reminder.circle_id ? "shared" : "personal",
+            }}
+            submitLabel="Enregistrer"
+          />
+        </CardContent>
+      </Card>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
-        {reminder.status === "pending" ? (
-          <form action={markAsDone.bind(null, id)}>
-            <Button type="submit" variant="primary" size="sm">
-              Marquer comme fait
-            </Button>
-          </form>
-        ) : (
-          <p className="text-sm text-fg-tertiary">
-            Ce rappel est déjà marqué fait.
-          </p>
-        )}
-        <DeleteReminderButton id={id} />
-      </div>
-    </main>
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
+          {reminder.status === "pending" ? (
+            <form action={markAsDone.bind(null, id)}>
+              <Button type="submit" variant="primary" size="sm">
+                Marquer comme fait
+              </Button>
+            </form>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Ce rappel est déjà marqué fait.
+            </p>
+          )}
+          <DeleteReminderButton id={id} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

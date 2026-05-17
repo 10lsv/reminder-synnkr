@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { button } from "@/components/ui/Button";
 import { CategoryFilter } from "@/components/features/CategoryFilter";
 import { ReminderFilters } from "@/components/features/ReminderFilters";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { ReminderSearch } from "@/components/features/ReminderSearch";
+import { button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
 import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,8 +15,6 @@ function parseFilter(raw: string | undefined): Filter {
   return "pending";
 }
 
-// Échappe les caractères pattern de PostgreSQL ilike pour qu'une saisie
-// utilisateur soit interprétée littéralement.
 function escapeIlike(q: string): string {
   return q.replace(/[%_\\]/g, (m) => `\\${m}`);
 }
@@ -48,9 +47,6 @@ export default async function RappelsPage({
     .from("reminders")
     .select("*", { count: "exact", head: true });
 
-  // Liste des catégories distinctes utilisées par le user (pour les chips
-  // de filtre). On lit toutes les valeurs non-null et on dédoublonne en JS,
-  // Postgres distinct via supabase-js demande un view ou rpc.
   const { data: categoryRows } = await supabase
     .from("reminders")
     .select("category")
@@ -78,77 +74,72 @@ export default async function RappelsPage({
   const isFirstTime = (totalCount ?? 0) === 0;
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10 pb-48">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-fg">Tes rappels</h1>
-        <p className="text-sm text-fg-secondary">
-          {pendingCount ?? 0} en attente
-        </p>
+    <div className="space-y-5">
+      <header className="flex items-end justify-between gap-4 pt-2">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-medium tracking-tight">Tes rappels</h1>
+          <p className="text-sm text-muted-foreground">
+            <span className="tabular-nums">{pendingCount ?? 0}</span> en attente
+          </p>
+        </div>
+        <Link
+          href="/rappels/nouveau"
+          className={button({ variant: "primary", size: "sm" })}
+        >
+          Nouveau
+        </Link>
       </header>
 
-      <ReminderSearch />
-
-      <ReminderFilters />
-
-      <CategoryFilter categories={categories} />
+      <div className="space-y-3">
+        <ReminderSearch />
+        <ReminderFilters />
+        <CategoryFilter categories={categories} />
+      </div>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center gap-4 py-16 text-center">
-          {isFirstTime ? (
-            <>
-              <p className="text-base text-fg-secondary">
-                Aucun rappel pour l&apos;instant.
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            {isFirstTime ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Aucun rappel pour l&apos;instant.
+                </p>
+                <Link
+                  href="/rappels/nouveau"
+                  className={button({ variant: "primary", size: "sm", className: "mt-2" })}
+                >
+                  Créer mon premier rappel
+                </Link>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {q
+                  ? `Aucun rappel ne contient « ${q} ».`
+                  : filter === "done"
+                    ? "Aucun rappel fait pour le moment."
+                    : filter === "pending"
+                      ? "Aucun rappel en attente."
+                      : "Aucun rappel."}
               </p>
-              <Link
-                href="/rappels/nouveau"
-                className={button({ variant: "primary" })}
-              >
-                Créer mon premier rappel
-              </Link>
-            </>
-          ) : (
-            <p className="text-base text-fg-secondary">
-              {q
-                ? `Aucun rappel ne contient « ${q} ».`
-                : filter === "done"
-                  ? "Aucun rappel fait pour le moment."
-                  : filter === "pending"
-                    ? "Aucun rappel en attente."
-                    : "Aucun rappel."}
-            </p>
-          )}
-        </div>
+            )}
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="flex flex-col">
-          {list.map((reminder) => (
-            <li key={reminder.id}>
-              <ReminderListItem
-                reminder={reminder}
-                partnerName={partner?.display_name ?? null}
-              />
-            </li>
-          ))}
-        </ul>
+        <Card>
+          <CardContent className="space-y-0">
+            <ul className="flex flex-col">
+              {list.map((reminder) => (
+                <li key={reminder.id}>
+                  <ReminderListItem
+                    reminder={reminder}
+                    partnerName={partner?.display_name ?? null}
+                  />
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       )}
-
-      {!isEmpty && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-[80px] z-30">
-          <div
-            aria-hidden
-            className="h-6 bg-gradient-to-t from-bg to-transparent"
-          />
-          <div className="pointer-events-auto bg-bg px-6 pb-4 pt-2">
-            <div className="mx-auto max-w-2xl">
-              <Link
-                href="/rappels/nouveau"
-                className={button({ variant: "primary", fullWidth: true })}
-              >
-                Nouveau rappel
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-    </main>
+    </div>
   );
 }

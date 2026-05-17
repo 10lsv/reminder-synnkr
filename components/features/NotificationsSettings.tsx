@@ -180,12 +180,12 @@ export function NotificationsSettings() {
   }
 
   if (state.kind === "loading") {
-    return <p className="text-sm text-fg-secondary">Chargement…</p>;
+    return <p className="text-sm text-muted-foreground">Chargement…</p>;
   }
 
   if (state.kind === "unsupported") {
     return (
-      <p className="text-sm text-fg-secondary">
+      <p className="text-sm text-muted-foreground">
         Les notifications ne sont pas supportées sur ce navigateur.
       </p>
     );
@@ -194,11 +194,11 @@ export function NotificationsSettings() {
   if (state.kind === "needs-install") {
     return (
       <div className="flex flex-col gap-3 text-sm">
-        <p className="text-fg">
+        <p className="text-foreground">
           Pour activer les notifications, ajoute Reminder à ton écran
           d&apos;accueil :
         </p>
-        <ol className="flex flex-col gap-1 pl-5 text-fg-secondary list-decimal">
+        <ol className="flex flex-col gap-1 pl-5 text-muted-foreground list-decimal">
           <li>
             Appuie sur <span aria-label="Partager">⤴</span> Partager
           </li>
@@ -211,7 +211,7 @@ export function NotificationsSettings() {
 
   if (state.kind === "permission-denied") {
     return (
-      <p className="text-sm text-fg-secondary">
+      <p className="text-sm text-muted-foreground">
         Les notifications sont bloquées. Active-les depuis Réglages iOS →
         Notifications → Reminder.
       </p>
@@ -221,7 +221,7 @@ export function NotificationsSettings() {
   if (state.kind === "needs-permission") {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-fg-secondary">
+        <p className="text-sm text-muted-foreground">
           Active les notifications pour recevoir tes rappels au moment voulu.
         </p>
         <Button
@@ -234,7 +234,7 @@ export function NotificationsSettings() {
           {busy ? "Activation…" : "Activer les notifications"}
         </Button>
         {feedback && (
-          <p role="alert" className="text-sm text-danger">
+          <p role="alert" className="text-sm text-destructive">
             {feedback}
           </p>
         )}
@@ -244,7 +244,7 @@ export function NotificationsSettings() {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-fg">
+      <p className="text-sm text-foreground">
         Notifications activées sur cet appareil.
       </p>
       <div className="flex items-center gap-6">
@@ -269,7 +269,7 @@ export function NotificationsSettings() {
         <p
           role="status"
           aria-live="polite"
-          className="text-sm text-fg-secondary"
+          className="text-sm text-muted-foreground"
         >
           {feedback}
         </p>

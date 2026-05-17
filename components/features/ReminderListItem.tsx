@@ -39,15 +39,15 @@ export function ReminderListItem({
         href={`/rappels/${reminder.id}`}
         className="flex flex-1 flex-col gap-1 min-w-0"
       >
-        <p className="line-clamp-2 text-base text-fg">{reminder.message}</p>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
+        <p className="line-clamp-2 text-base text-foreground">{reminder.message}</p>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <span>
             <LocalTime iso={reminder.scheduled_at} />
           </span>
           {reminder.circle_id && partnerName && (
             <>
               <span aria-hidden>·</span>
-              <span className="rounded-pill border border-accent-strong bg-accent-bg px-2 py-0.5 text-xs uppercase tracking-label text-accent-strong">
+              <span className="rounded-full border border-accent bg-accent/30 px-2 py-0.5 text-xs uppercase tracking-wider text-accent-foreground">
                 {partnerName}
               </span>
             </>
@@ -55,7 +55,7 @@ export function ReminderListItem({
           {reminder.category && (
             <>
               <span aria-hidden>·</span>
-              <span className="uppercase tracking-label text-xs text-fg-tertiary">
+              <span className="uppercase tracking-wider text-xs text-muted-foreground">
                 {reminder.category}
               </span>
             </>
@@ -80,9 +80,9 @@ export function ReminderListItem({
             href={`/rappels/${reminder.id}`}
             aria-label="Modifier"
             className={cn(
-              "flex h-9 w-9 items-center justify-center rounded-pill",
-              "text-fg-secondary hover:text-fg transition-colors duration-150 ease-out",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+              "flex h-9 w-9 items-center justify-center rounded-full",
+              "text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             )}
           >
             <Pencil size={18} strokeWidth={2} aria-hidden />

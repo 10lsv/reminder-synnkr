@@ -3,38 +3,37 @@ import { cn } from "@/lib/utils";
 
 export const button = cva(
   [
-    "inline-flex items-center justify-center cursor-pointer touch-manipulation",
-    "transition-all duration-150 ease-out",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
-    "disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed",
+    "inline-flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation",
+    "rounded-lg border border-transparent text-sm font-medium whitespace-nowrap",
+    "transition-all outline-none select-none",
+    "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+    "disabled:pointer-events-none disabled:opacity-50",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ],
   {
     variants: {
       variant: {
-        primary:
-          "rounded-pill bg-cta-bg text-cta-fg font-medium hover:opacity-90",
+        primary: "bg-primary text-primary-foreground hover:bg-primary/90",
         secondary:
-          "text-fg-secondary hover:underline underline-offset-4 hover:text-fg",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        outline:
+          "border-border bg-background text-foreground hover:bg-muted",
+        ghost:
+          "text-muted-foreground hover:bg-muted hover:text-foreground",
         danger:
-          "text-danger hover:underline underline-offset-4",
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:ring-destructive/20",
+        link: "text-foreground underline-offset-4 hover:underline",
       },
       size: {
-        default: "",
-        sm: "",
+        default: "h-9 px-3",
+        sm: "h-8 px-2.5 text-[0.8rem] rounded-md",
+        lg: "h-10 px-4",
       },
       fullWidth: {
         true: "w-full",
         false: "",
       },
     },
-    compoundVariants: [
-      { variant: "primary", size: "default", className: "px-6 py-[14px] text-base" },
-      { variant: "primary", size: "sm", className: "px-4 py-[10px] text-sm" },
-      { variant: "secondary", size: "default", className: "text-base py-2" },
-      { variant: "secondary", size: "sm", className: "text-sm py-1" },
-      { variant: "danger", size: "default", className: "text-base py-2" },
-      { variant: "danger", size: "sm", className: "text-sm py-1" },
-    ],
     defaultVariants: {
       variant: "primary",
       size: "default",
@@ -46,11 +45,6 @@ export const button = cva(
 interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof button> {
-  /**
-   * HTML button type. Defaults to `"button"` to avoid accidental form
-   * submission when placed inside a `<form>`. Pass `type="submit"`
-   * explicitly when the button is intended to submit a form.
-   */
   type?: "button" | "submit" | "reset";
 }
 

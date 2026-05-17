@@ -7,9 +7,9 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const paddingClasses: Record<CardPadding, string> = {
-  default: "p-6",
+  default: "p-5",
   sm: "p-4",
-  lg: "p-8",
+  lg: "p-6",
 };
 
 export function Card({
@@ -21,7 +21,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-bg",
+        "rounded-xl bg-card text-card-foreground ring-1 ring-border/60",
         paddingClasses[padding],
         className,
       )}
@@ -30,4 +30,33 @@ export function Card({
       {children}
     </div>
   );
+}
+
+export function CardHeader({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("mb-3 space-y-1", className)} {...props} />;
+}
+
+export function CardTitle({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        "text-sm font-medium text-muted-foreground",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function CardContent({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("space-y-3", className)} {...props} />;
 }

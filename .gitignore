@@ -45,3 +45,6 @@ next-env.d.ts
 
 # one-off seed scripts (kept local)
 /scripts/
+
+# Design reference project (not part of Reminder)
+/SubSYNNKR/

@@ -71,7 +71,7 @@ function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-fg-secondary">Repousser de…</p>
+        <p className="text-sm text-muted-foreground">Repousser de…</p>
         <div className="flex flex-wrap gap-2">
           {snoozeOptions.map((opt) => {
             const active = option === opt.value;
@@ -82,12 +82,12 @@ function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
                 onClick={() => setOption(opt.value)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-pill border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
+                  "rounded-full border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
                   "transition-colors duration-150 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   active
-                    ? "border-fg bg-fg text-bg"
-                    : "border-border bg-transparent text-fg hover:border-fg-secondary",
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-transparent text-foreground hover:border-muted-foreground",
                 )}
               >
                 {opt.label}
@@ -108,7 +108,7 @@ function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
         error={state.error ?? undefined}
         required
       />
-      <p className="text-sm text-fg-tertiary">
+      <p className="text-sm text-muted-foreground">
         {tooShort
           ? `Encore ${remaining} caractère${remaining > 1 ? "s" : ""} minimum`
           : `${trimmedLength}/${SNOOZE_MAX_CHARS}`}
@@ -120,7 +120,7 @@ function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
       <button
         type="button"
         onClick={onCancel}
-        className="cursor-pointer text-sm text-fg-secondary underline-offset-4 hover:underline"
+        className="cursor-pointer text-sm text-muted-foreground underline-offset-4 hover:underline"
       >
         Annuler
       </button>
@@ -143,13 +143,13 @@ export function ActiveReminderActions({ id }: { id: string }) {
       <button
         type="button"
         onClick={() => setSnoozing(true)}
-        className="cursor-pointer text-base text-fg-secondary underline-offset-4 hover:underline"
+        className="cursor-pointer text-base text-muted-foreground underline-offset-4 hover:underline"
       >
         Plus tard
       </button>
       <Link
         href={`/rappels/${id}`}
-        className="text-sm text-fg-tertiary underline-offset-4 hover:underline"
+        className="text-sm text-muted-foreground underline-offset-4 hover:underline"
       >
         Modifier
       </Link>

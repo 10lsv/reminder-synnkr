@@ -23,41 +23,43 @@ export default async function ActiveReminderPage({
     .eq("id", id)
     .maybeSingle();
 
-  if (!reminder || reminder.user_id !== user.id) {
+  if (!reminder) {
     redirect("/");
   }
 
   if (reminder.status === "done") {
     return (
-      <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-8 px-6 py-10 text-center">
-        <p className="text-xs uppercase tracking-label text-fg-tertiary">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-background px-6 text-center">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
           Reminder · <LocalTime iso={reminder.scheduled_at} mode="time" />
         </p>
-        <p className="text-xl text-fg-secondary">
+        <p className="text-lg text-muted-foreground">
           Ce rappel est déjà marqué fait.
         </p>
         <Link href="/" className={button({ variant: "primary" })}>
           Retour à l&apos;accueil
         </Link>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-6 pt-10 pb-12">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background px-6 pt-16 pb-12">
       <header className="flex justify-center">
-        <p className="text-xs uppercase tracking-label text-fg-tertiary">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
           Reminder · <LocalTime iso={reminder.scheduled_at} mode="time" />
         </p>
       </header>
 
       <div className="flex flex-1 items-center justify-center py-12">
-        <p className="text-center text-message font-medium leading-tight text-fg">
+        <p className="text-center text-3xl font-medium leading-tight text-foreground">
           {reminder.message}
         </p>
       </div>
 
-      <ActiveReminderActions id={reminder.id} />
-    </main>
+      <div className="mx-auto w-full max-w-sm">
+        <ActiveReminderActions id={reminder.id} />
+      </div>
+    </div>
   );
 }

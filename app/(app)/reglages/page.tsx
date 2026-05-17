@@ -1,6 +1,7 @@
 import { signOut } from "@/app/actions/auth";
 import { NotificationsSettings } from "@/components/features/NotificationsSettings";
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,41 +13,55 @@ export default async function ReglagesPage() {
   const partner = user ? await getPartner(supabase, user.id) : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-col gap-12 px-6 py-10 pb-32">
-      <div className="flex items-baseline gap-2 text-2xl">
-        <span className="font-normal text-fg-tertiary">Reminder</span>
-        <span className="font-bold text-fg">SYNNKR</span>
-      </div>
+    <div className="space-y-5">
+      <header className="space-y-1 pt-2">
+        <h1 className="text-2xl font-medium tracking-tight">Réglages</h1>
+        <p className="text-sm text-muted-foreground">
+          Notifications, associé et compte.
+        </p>
+      </header>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-base font-medium text-fg">Notifications</h2>
-        <NotificationsSettings />
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Notifications</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <NotificationsSettings />
+        </CardContent>
+      </Card>
 
       {partner && (
-        <section className="flex flex-col gap-2">
-          <h2 className="text-base font-medium text-fg">Associé</h2>
-          <p className="text-sm text-fg-secondary">
-            Tu partages tes rappels communs avec{" "}
-            <span className="font-medium text-fg">
-              {partner.display_name ?? "ton associé"}
-            </span>
-            .
-          </p>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Associé</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-foreground">
+              Tu partages tes rappels communs avec{" "}
+              <span className="font-medium">
+                {partner.display_name ?? "ton associé"}
+              </span>
+              .
+            </p>
+          </CardContent>
+        </Card>
       )}
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-base font-medium text-fg">Compte</h2>
-        {user?.email && (
-          <p className="text-sm text-fg-secondary">{user.email}</p>
-        )}
-        <form action={signOut} className="w-full">
-          <Button type="submit" variant="primary" fullWidth>
-            Se déconnecter
-          </Button>
-        </form>
-      </section>
-    </main>
+      <Card>
+        <CardHeader>
+          <CardTitle>Compte</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {user?.email && (
+            <p className="text-sm text-muted-foreground">{user.email}</p>
+          )}
+          <form action={signOut} className="w-full">
+            <Button type="submit" variant="primary" fullWidth size="sm">
+              Se déconnecter
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

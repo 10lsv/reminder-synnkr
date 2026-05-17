@@ -1,118 +1,114 @@
+/* General Sans — primary typeface (Fontshare CDN).
+ * Must be the FIRST rule in the file. */
+@import url("https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap");
+
 @import "tailwindcss";
 
-/* === Tokens DA — source de vérité (BRIEF.md §2) === */
-:root {
-  /* Fond et surfaces */
-  --bg: #FFFFFF;
-  --surface: #FFFFFF;
-  --border: #EDEDED;
-  --border-strong: #D4D4D4;
+@custom-variant dark (&:is(.dark *));
 
-  /* Texte */
-  --fg: #0A0A0A;
-  --fg-secondary: #6B6B6B;
-  --fg-tertiary: #A0A0A0;
-
-  /* CTA */
-  --cta-bg: #0A0A0A;
-  --cta-fg: #FFFFFF;
-
-  /* Accent (touche uniquement) */
-  --accent: #B8B0E0;
-  --accent-strong: #9A8FD4;
-  --accent-bg: #F2F0FA;
-
-  /* États */
-  --danger: #D32F2F;
-  --success: #2E7D32;
-
-  /* Police */
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-
-  /* Échelle texte */
-  --text-xs: 11px;
-  --text-sm: 13px;
-  --text-base: 15px;
-  --text-lg: 17px;
-  --text-xl: 22px;
-  --text-2xl: 28px;
-  --text-hero: 48px;
-  --text-message: 36px;
-
-  /* Poids */
-  --weight-regular: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
-  --weight-bold: 700;
-
-  /* Letter spacing */
-  --tracking-label: 0.08em;
-  --tracking-normal: 0em;
-  --tracking-tight: -0.02em;
-
-  /* Espacement (base 4) */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-
-  /* Rayons */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-pill: 999px;
-}
-
-/* === Tailwind v4 — expose les tokens en utilitaires === */
 @theme inline {
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "General Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "General Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-ring: var(--ring);
+  --color-input: var(--input);
   --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
-  --color-fg: var(--fg);
-  --color-fg-secondary: var(--fg-secondary);
-  --color-fg-tertiary: var(--fg-tertiary);
-  --color-cta-bg: var(--cta-bg);
-  --color-cta-fg: var(--cta-fg);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
-  --color-accent-strong: var(--accent-strong);
-  --color-accent-bg: var(--accent-bg);
-  --color-danger: var(--danger);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
   --color-success: var(--success);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 
-  --font-sans: var(--font-sans);
-
-  --text-xs: var(--text-xs);
-  --text-sm: var(--text-sm);
-  --text-base: var(--text-base);
-  --text-lg: var(--text-lg);
-  --text-xl: var(--text-xl);
-  --text-2xl: var(--text-2xl);
-  --text-hero: var(--text-hero);
-  --text-message: var(--text-message);
-
-  --font-weight-regular: var(--weight-regular);
-  --font-weight-medium: var(--weight-medium);
-  --font-weight-semibold: var(--weight-semibold);
-  --font-weight-bold: var(--weight-bold);
-
-  --tracking-label: var(--tracking-label);
-  --tracking-tight: var(--tracking-tight);
-
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-pill: var(--radius-pill);
+  --tracking-tight: -0.015em;
 }
 
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-sans);
+/* ──────────────────────────────────────────────────────────────────────
+ * LIGHT (default) — black-on-white, soft lavender accent #C7C4F1.
+ * ────────────────────────────────────────────────────────────────────── */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.16 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0 0);
+  --primary: oklch(0.16 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.16 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.83 0.06 285);
+  --accent-foreground: oklch(0.18 0.04 285);
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.55 0.13 145);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.83 0.06 285);
+  --radius: 0.75rem;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * DARK — near-black with the same lavender accent (slightly lifted).
+ * ────────────────────────────────────────────────────────────────────── */
+.dark {
+  --background: oklch(0.13 0 0);
+  --foreground: oklch(0.96 0 0);
+  --card: oklch(0.165 0 0);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.165 0 0);
+  --popover-foreground: oklch(0.96 0 0);
+  --primary: oklch(0.96 0 0);
+  --primary-foreground: oklch(0.16 0 0);
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.96 0 0);
+  --muted: oklch(0.21 0 0);
+  --muted-foreground: oklch(0.66 0 0);
+  --accent: oklch(0.83 0.07 285);
+  --accent-foreground: oklch(0.16 0.04 285);
+  --destructive: oklch(0.7 0.19 22);
+  --destructive-foreground: oklch(0.96 0 0);
+  --success: oklch(0.65 0.15 145);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.83 0.07 285);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "ss01", "ss02";
+  }
+  html {
+    @apply font-sans;
+  }
+  .tabular-nums,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+  h1, h2, h3, h4 {
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
 }

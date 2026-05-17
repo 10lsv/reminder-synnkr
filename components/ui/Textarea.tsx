@@ -20,11 +20,11 @@ export function Textarea({
   const errorId = `${textareaId}-error`;
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col gap-2">
       {label && (
         <label
           htmlFor={textareaId}
-          className="mb-2 text-base font-medium text-fg"
+          className="text-sm font-medium leading-none text-foreground"
         >
           {label}
         </label>
@@ -35,17 +35,19 @@ export function Textarea({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         className={cn(
-          "min-h-[120px] resize-y rounded-lg border bg-bg px-4 py-3 text-base text-fg outline-none",
-          "placeholder:text-fg-tertiary",
-          "transition-colors duration-150 ease-out",
-          "focus:border-fg",
-          error ? "border-danger" : "border-border",
+          "min-h-[120px] w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2.5 text-base text-foreground",
+          "transition-colors outline-none",
+          "placeholder:text-muted-foreground",
+          "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          "md:text-sm",
+          error && "border-destructive ring-3 ring-destructive/20",
           className,
         )}
         {...props}
       />
       {error && (
-        <p id={errorId} className="mt-2 text-sm text-danger">
+        <p id={errorId} className="text-xs text-destructive">
           {error}
         </p>
       )}

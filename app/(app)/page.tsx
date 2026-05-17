@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { button } from "@/components/ui/Button";
 import { LocalTime } from "@/components/features/LocalTime";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -58,85 +58,100 @@ export default async function HomePage() {
   const isEmpty = pendingTotal === 0 && excusesList.length === 0;
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-10 px-6 py-10 pb-32">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-fg">Bonjour {firstName}</h1>
-        {pendingTotal > 0 && (
-          <p className="text-sm text-fg-secondary">
-            {pendingTotal} rappel{pendingTotal > 1 ? "s" : ""} en attente
-          </p>
-        )}
+    <div className="space-y-5">
+      <header className="space-y-1 pt-2">
+        <h1 className="text-2xl font-medium tracking-tight">
+          {firstName ? `Bonjour ${firstName}` : "Tableau de bord"}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {pendingTotal > 0
+            ? `${pendingTotal} rappel${pendingTotal > 1 ? "s" : ""} en attente.`
+            : "Tu es à jour."}
+        </p>
       </header>
 
       {isEmpty ? (
-        <section className="flex flex-col items-center gap-6 py-12 text-center">
-          <p className="text-base text-fg-secondary">
-            Aucun rappel pour l&apos;instant.
-          </p>
-          <Link
-            href="/rappels/nouveau"
-            className={button({ variant: "primary" })}
-          >
-            Créer mon premier rappel
-          </Link>
-        </section>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              Aucun rappel pour l&apos;instant.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Crée ton premier rappel pour démarrer.
+            </p>
+            <Link
+              href="/rappels/nouveau"
+              className={button({ variant: "primary", size: "sm", className: "mt-2" })}
+            >
+              Créer mon premier rappel
+            </Link>
+          </CardContent>
+        </Card>
       ) : (
-        <section className="flex flex-col items-center gap-3 py-4">
-          <span className="text-hero font-bold leading-none tracking-tight text-fg tabular-nums">
-            {activeCount}
-          </span>
-          <SectionLabel withDot>
-            {activeCount > 1
-              ? "À traiter maintenant"
-              : activeCount === 1
-                ? "À traiter maintenant"
-                : "Tout est à jour"}
-          </SectionLabel>
-        </section>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
+            <span className="text-5xl font-medium leading-none tracking-tight tabular-nums">
+              {activeCount}
+            </span>
+            <p className="text-sm text-muted-foreground">
+              {activeCount > 0
+                ? `à traiter maintenant`
+                : "tout est à jour"}
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {upcomingList.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <SectionLabel withDot>Prochains rappels</SectionLabel>
-          <ul className="flex flex-col">
-            {upcomingList.map((reminder) => (
-              <li key={reminder.id}>
-                <ReminderListItem
-                  reminder={reminder}
-                  showActions={false}
-                  partnerName={partner?.display_name ?? null}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Prochains rappels</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-0">
+            <ul className="flex flex-col">
+              {upcomingList.map((reminder) => (
+                <li key={reminder.id}>
+                  <ReminderListItem
+                    reminder={reminder}
+                    showActions={false}
+                    partnerName={partner?.display_name ?? null}
+                  />
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       )}
 
       {excusesList.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <SectionLabel withDot>Tes excuses</SectionLabel>
-          <ul className="flex flex-col gap-3">
-            {excusesList.map((excuse) => (
-              <li key={excuse.id} className="flex flex-col gap-1">
-                <p className="text-base italic text-fg-secondary">
-                  « {excuse.reason} »
-                </p>
-                {excuse.created_at && (
-                  <p className="text-xs text-fg-tertiary">
-                    <LocalTime iso={excuse.created_at} />
+        <Card>
+          <CardHeader>
+            <CardTitle>Tes excuses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {excusesList.map((excuse) => (
+                <li key={excuse.id} className="space-y-0.5">
+                  <p className="text-sm italic text-foreground">
+                    « {excuse.reason} »
                   </p>
-                )}
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/excuses"
-            className="self-start text-sm text-fg-secondary underline-offset-4 hover:underline"
-          >
-            Voir toutes les excuses
-          </Link>
-        </section>
+                  {excuse.created_at && (
+                    <p className="text-xs text-muted-foreground">
+                      <LocalTime iso={excuse.created_at} />
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/excuses"
+              className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+            >
+              Voir toutes les excuses →
+            </Link>
+          </CardContent>
+        </Card>
       )}
-    </main>
+    </div>
   );
 }

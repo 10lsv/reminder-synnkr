@@ -47,13 +47,13 @@ export function CategoryFilter({ categories }: CategoryFilterProps) {
               disabled={pending}
               onClick={() => setCategory(value)}
               className={cn(
-                "rounded-pill border px-[12px] py-1.5 text-xs uppercase tracking-label cursor-pointer touch-manipulation",
+                "rounded-full border px-[12px] py-1.5 text-xs uppercase tracking-wider cursor-pointer touch-manipulation",
                 "transition-colors duration-150 ease-out",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 "disabled:cursor-not-allowed disabled:opacity-50",
                 active
-                  ? "border-fg bg-fg text-bg"
-                  : "border-border bg-transparent text-fg-secondary hover:border-fg-secondary",
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
               )}
             >
               {label}
