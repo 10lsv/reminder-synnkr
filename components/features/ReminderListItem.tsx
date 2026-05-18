@@ -1,4 +1,4 @@
-import { AlertCircle, Pencil } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { InlineDeleteReminder } from "@/components/features/InlineDeleteReminder";
 import { LocalTime } from "@/components/features/LocalTime";
@@ -8,18 +8,10 @@ import type { Tables } from "@/types/database";
 
 type Reminder = Tables<"reminders">;
 
-const statusLabels: Record<string, string> = {
-  done: "Fait",
-  snoozed: "Plus tard",
-  expired: "Expiré",
-};
-
 interface ReminderListItemProps {
   reminder: Reminder;
   showActions?: boolean;
   partnerName?: string | null;
-  // Map user_id → display_name (pour résoudre le créateur d'un rappel commun
-  // si on veut afficher "par Lélio").
   userNameById?: Map<string, string>;
   currentUserId?: string;
 }
@@ -31,82 +23,76 @@ export function ReminderListItem({
   userNameById,
   currentUserId,
 }: ReminderListItemProps) {
-  const statusLabel = statusLabels[reminder.status];
-  const recurrenceLabel =
-    reminder.recurrence !== "none"
-      ? recurrenceLabels[reminder.recurrence as "daily" | "weekly" | "monthly"]
-      : undefined;
   const isDone = reminder.status === "done";
   const isUrgent = reminder.priority === "urgent" && !isDone;
   const isLow = reminder.priority === "low";
   const isShared = Boolean(reminder.circle_id);
   const creatorIsMe = reminder.user_id === currentUserId;
-  // On n'affiche le badge "par X" que si je ne suis pas le créateur — la
-  // pastille lavande indique déjà qu'il s'agit d'un rappel commun.
   const creatorName =
     isShared && !creatorIsMe
       ? userNameById?.get(reminder.user_id) ?? partnerName
       : null;
+  const recurrenceLabel =
+    reminder.recurrence !== "none"
+      ? recurrenceLabels[reminder.recurrence as "daily" | "weekly" | "monthly"]
+      : undefined;
+
+  // Préfixe ASCII : ! pour urgent, x pour done, > pour shared, · sinon.
+  const prefix = isUrgent ? "!" : isDone ? "✓" : isShared ? "→" : "·";
 
   return (
     <div
       className={cn(
-        "group/item flex items-center gap-2.5 border-b border-border/60 py-2.5 last:border-b-0 transition-colors duration-150",
-        "hover:bg-muted/40 -mx-2 px-2 rounded-md",
-        isUrgent && "bg-destructive/10 my-1 border-transparent hover:bg-destructive/15",
-        isDone && "bg-success/10 border-transparent hover:bg-success/15",
+        "group/item relative flex items-stretch gap-3 py-3 transition-colors",
+        isUrgent && "bg-destructive/5",
+        isDone && "opacity-60",
       )}
     >
-      <div className="flex w-3 flex-col items-center">
-        {isUrgent ? (
-          <AlertCircle
-            className="size-3.5 text-destructive"
-            aria-label="Urgent"
-          />
-        ) : isShared ? (
-          <span className="size-1.5 rounded-full bg-accent" aria-hidden />
-        ) : (
-          <span
-            className={cn(
-              "size-1.5 rounded-full",
-              isLow ? "bg-muted" : "bg-muted-foreground/40",
-            )}
-            aria-hidden
-          />
+      <span
+        aria-hidden
+        className={cn(
+          "ml-0 mt-0.5 w-3 select-none text-center font-mono text-[14px] font-medium leading-tight",
+          isUrgent && "text-destructive animate-pulse-dot",
+          isDone && "text-success",
+          isShared && !isUrgent && !isDone && "text-accent-foreground",
+          !isUrgent && !isDone && !isShared && "text-muted-foreground",
         )}
-      </div>
+      >
+        {prefix}
+      </span>
 
       <Link
         href={`/rappels/${reminder.id}`}
-        className="flex flex-1 flex-col gap-0.5 min-w-0 transition-transform duration-150 ease-out active:scale-[0.985] transform-gpu"
+        className="flex flex-1 flex-col gap-1 min-w-0"
       >
         <p
           className={cn(
-            "line-clamp-2 text-[14px] leading-snug",
-            isLow ? "text-muted-foreground" : "text-foreground",
-            isUrgent && "font-medium",
+            "line-clamp-2 text-[15px] leading-snug",
+            isUrgent
+              ? "font-medium text-destructive uppercase tracking-tight"
+              : isDone
+                ? "line-through text-muted-foreground"
+                : isLow
+                  ? "text-muted-foreground"
+                  : "text-foreground",
           )}
         >
           {reminder.message}
         </p>
-        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-muted-foreground">
-          <span>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+          <span className="tabular-nums">
             <LocalTime iso={reminder.scheduled_at} />
           </span>
           {reminder.category && (
             <>
               <span aria-hidden>·</span>
-              <span className="uppercase tracking-wider">
-                {reminder.category}
-              </span>
+              <span>{reminder.category}</span>
             </>
           )}
           {creatorName && (
             <>
               <span aria-hidden>·</span>
-              <span className="rounded bg-accent/40 px-1 text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
-                par {creatorName}
-              </span>
+              <span>par {creatorName}</span>
             </>
           )}
           {recurrenceLabel && (
@@ -115,28 +101,28 @@ export function ReminderListItem({
               <span>↻ {recurrenceLabel}</span>
             </>
           )}
-          {statusLabel && (
-            <>
-              <span aria-hidden>·</span>
-              <span>{statusLabel}</span>
-            </>
-          )}
         </div>
       </Link>
-      {showActions && (
-        <div className="flex items-center gap-0.5">
+
+      {showActions ? (
+        <div className="flex items-center gap-0">
           <Link
             href={`/rappels/${reminder.id}`}
             aria-label="Modifier"
-            className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-md",
-              "text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
-            )}
+            className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Pencil size={14} />
+            <ArrowUpRight size={16} strokeWidth={2} />
           </Link>
           <InlineDeleteReminder id={reminder.id} />
         </div>
+      ) : (
+        <Link
+          href={`/rappels/${reminder.id}`}
+          aria-label="Ouvrir"
+          className="flex items-center text-muted-foreground transition-colors group-hover/item:text-foreground"
+        >
+          <ArrowUpRight size={14} strokeWidth={2} />
+        </Link>
       )}
     </div>
   );

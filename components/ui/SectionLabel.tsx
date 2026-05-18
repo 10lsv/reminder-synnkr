@@ -11,16 +11,8 @@ export function SectionLabel({
   ...props
 }: SectionLabelProps) {
   return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-2 text-sm font-medium text-muted-foreground",
-        className,
-      )}
-      {...props}
-    >
-      {withDot && (
-        <span aria-hidden className="size-1.5 rounded-full bg-accent" />
-      )}
+    <div className={cn("label-mono inline-flex items-center gap-2", className)} {...props}>
+      {withDot && <span aria-hidden className="size-1 bg-foreground" />}
       <span>{children}</span>
     </div>
   );

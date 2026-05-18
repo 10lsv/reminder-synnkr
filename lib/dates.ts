@@ -57,6 +57,14 @@ export function formatDateLong(input: Date | string): string {
   return capitalize(format(toDate(input), "EEEE d MMMM", { locale: fr }));
 }
 
+// Brutalist date stamp: 18.05.26 / LUN
+export function formatDateStamp(input: Date | string): string {
+  const date = toDate(input);
+  const day = format(date, "EEE", { locale: fr }).slice(0, 3).toUpperCase();
+  const cleanDay = day.replace(/\.$/, "");
+  return `${format(date, "dd.MM.yy")} / ${cleanDay}`;
+}
+
 export function formatTime(input: Date | string): string {
   return format(toDate(input), "HH:mm");
 }

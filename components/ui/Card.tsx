@@ -1,17 +1,21 @@
 import { cn } from "@/lib/utils";
 
-type CardPadding = "default" | "sm" | "lg";
+type CardPadding = "default" | "sm" | "lg" | "none";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   padding?: CardPadding;
 }
 
 const paddingClasses: Record<CardPadding, string> = {
-  default: "p-5",
-  sm: "p-4",
-  lg: "p-6",
+  default: "py-5",
+  sm: "py-4",
+  lg: "py-6",
+  none: "",
 };
 
+// Brutalist: pas de fond, pas de ring. Une "card" est simplement une section
+// délimitée par un border-top. Le dernier enfant d'un container n'a pas de
+// border-bottom (utiliser last:border-b-0 ou un parent qui contrôle).
 export function Card({
   padding = "default",
   className,
@@ -19,16 +23,16 @@ export function Card({
   ...props
 }: CardProps) {
   return (
-    <div
+    <section
       className={cn(
-        "rounded-xl bg-card text-card-foreground ring-1 ring-border/60",
+        "border-t border-border text-foreground",
         paddingClasses[padding],
         className,
       )}
       {...props}
     >
       {children}
-    </div>
+    </section>
   );
 }
 
@@ -36,7 +40,7 @@ export function CardHeader({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("mb-3 space-y-1", className)} {...props} />;
+  return <div className={cn("mb-4", className)} {...props} />;
 }
 
 export function CardTitle({
@@ -45,10 +49,7 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        "text-sm font-medium text-muted-foreground",
-        className,
-      )}
+      className={cn("label-mono", className)}
       {...props}
     />
   );

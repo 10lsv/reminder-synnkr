@@ -1,11 +1,8 @@
-import { Sparkles, User, Users, Zap } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { DailyProgress } from "@/components/features/DailyProgress";
-import { LocalTime } from "@/components/features/LocalTime";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { TodayLabel } from "@/components/features/TodayLabel";
-import { button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMembersNameMap, getPartner } from "@/lib/circle";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
@@ -34,12 +31,8 @@ export default async function HomePage() {
   const partner = user ? await getPartner(supabase, user.id) : null;
   const partnerName = partner?.display_name ?? null;
 
-  // Fenêtre "jour" élargie (-12h / +36h UTC) pour couvrir n'importe quelle
-  // TZ utilisateur. Le filtre exact en TZ navigateur se fait dans
-  // <DailyProgress />.
   const dayWindowStart = new Date();
   dayWindowStart.setUTCHours(0, 0, 0, 0);
-  dayWindowStart.setUTCDate(dayWindowStart.getUTCDate());
   const dayLowerIso = new Date(
     dayWindowStart.getTime() - 12 * 60 * 60 * 1000,
   ).toISOString();
@@ -52,7 +45,6 @@ export default async function HomePage() {
     { data: pendingRows },
     { data: dayRows },
     { data: upcoming },
-    { data: excuses },
     membersNameMap,
   ] = await Promise.all([
     supabase
@@ -76,11 +68,6 @@ export default async function HomePage() {
       .order("priority", { ascending: false })
       .order("scheduled_at", { ascending: true })
       .limit(5),
-    supabase
-      .from("snooze_reasons")
-      .select("id, reason, created_at")
-      .order("created_at", { ascending: false })
-      .limit(3),
     user
       ? getMembersNameMap(supabase, user.id)
       : Promise.resolve(new Map<string, string>()),
@@ -88,203 +75,126 @@ export default async function HomePage() {
 
   const pendingTotal = totalPending ?? 0;
   const pending = pendingRows ?? [];
-  // 3 facettes orthogonales :
-  // - "Pour toi" : pending perso (pas dans le cercle commun).
-  // - "En commun" : pending communs (visibles par les deux).
-  // - "Urgent" : tous les pending dont priority = urgent (toutes scopes).
   const personalCount = user
     ? pending.filter((r) => !r.circle_id && r.user_id === user.id).length
     : 0;
   const sharedCount = pending.filter((r) => Boolean(r.circle_id)).length;
   const urgentCount = pending.filter((r) => r.priority === "urgent").length;
   const upcomingList = upcoming ?? [];
-  const excusesList = excuses ?? [];
-  const isEmpty = pendingTotal === 0 && excusesList.length === 0;
+  const isEmpty = pendingTotal === 0;
   const dayRowsList = dayRows ?? [];
 
   return (
-    <div className="page-enter space-y-6">
-      <header className="space-y-1 pt-2 text-center">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          <TodayLabel />
+    <div className="page-enter -mx-4 divide-y divide-foreground border-y border-foreground">
+      {/* Date stamp + greeting */}
+      <section className="px-4 py-6">
+        <p className="brand-mark text-muted-foreground">
+          <TodayLabel mode="stamp" />
         </p>
-        <h1 className="text-[26px] font-medium tracking-tight">
-          {firstName ? `Bonjour ${firstName}` : "Tableau de bord"}
+        <h1 className="mt-3 text-[34px] font-medium leading-none tracking-tight">
+          {firstName ? `Bonjour ${firstName}.` : "Tableau de bord."}
         </h1>
-      </header>
+      </section>
 
       {isEmpty ? (
-        <Card padding="lg">
-          <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-accent/30">
-              <Sparkles className="size-5 text-accent-foreground" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-base font-medium">Tu es à jour</p>
-              <p className="text-sm text-muted-foreground">
-                Aucun rappel pour l&apos;instant.
-              </p>
-            </div>
-            <Link
-              href="/rappels/nouveau"
-              className={button({
-                variant: "primary",
-                size: "sm",
-                className: "mt-1",
-              })}
-            >
-              Créer mon premier rappel
-            </Link>
-          </CardContent>
-        </Card>
-      ) : (
-        <div>
-          <Card
-            padding="lg"
-            className="relative space-y-5 overflow-hidden border-0 bg-foreground p-7 text-background ring-0 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_18px_40px_-18px_rgba(0,0,0,0.45)] animate-breathing"
+        <section className="px-4 py-10">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            // tu es à jour
+          </p>
+          <p className="mt-3 text-2xl font-medium leading-tight">
+            Aucun rappel programmé.
+          </p>
+          <Link
+            href="/rappels/nouveau"
+            className="mt-6 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground hover:underline"
           >
-            <div className="grid grid-cols-3 divide-x divide-background/15">
-              <StatCell
-                icon={User}
-                label="Pour toi"
-                value={personalCount}
-                tone="dark"
-              />
-              <StatCell
-                icon={Users}
-                label="En commun"
-                value={sharedCount}
-                tone="dark"
-              />
-              <StatCell
-                icon={Zap}
-                label="Urgent"
-                value={urgentCount}
-                highlight={urgentCount > 0 ? "urgent" : undefined}
-                tone="dark"
-              />
-            </div>
-            <DailyProgress rappels={dayRowsList} tone="dark" />
-          </Card>
-        </div>
+            Créer le premier
+            <ArrowUpRight size={14} strokeWidth={2} />
+          </Link>
+        </section>
+      ) : (
+        <>
+          {/* Stats grid */}
+          <section className="grid grid-cols-3 divide-x divide-foreground">
+            <StatCell label="Perso" value={personalCount} />
+            <StatCell label="Partagé" value={sharedCount} />
+            <StatCell
+              label="Urgent"
+              value={urgentCount}
+              highlight={urgentCount > 0}
+            />
+          </section>
+
+          {/* Daily progress */}
+          <section className="px-4 py-5">
+            <DailyProgress rappels={dayRowsList} />
+          </section>
+        </>
       )}
 
       {upcomingList.length > 0 && (
-        <Card padding="lg">
-          <CardHeader className="mb-4">
-            <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em]">
-              Prochains rappels
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-0">
-            <ul className="flex flex-col">
-              {upcomingList.map((reminder) => (
-                <li key={reminder.id}>
-                  <ReminderListItem
-                    reminder={reminder}
-                    showActions={false}
-                    partnerName={partnerName}
-                    userNameById={membersNameMap}
-                    currentUserId={user?.id}
-                  />
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {excusesList.length > 0 && (
-        <Card padding="lg">
-          <CardHeader className="mb-4">
-            <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em]">
-              Tes excuses
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-3">
-              {excusesList.map((excuse) => (
-                <li key={excuse.id} className="space-y-1">
-                  <p className="text-[15px] leading-snug italic text-foreground">
-                    « {excuse.reason} »
-                  </p>
-                  {excuse.created_at && (
-                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                      <LocalTime iso={excuse.created_at} />
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
+        <section className="px-4 py-5">
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className="label-mono">À venir</p>
             <Link
-              href="/excuses"
-              className="inline-flex text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              href="/rappels"
+              className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
             >
-              Voir toutes les excuses →
+              Voir tout →
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+          <ul className="divide-y divide-border">
+            {upcomingList.map((reminder) => (
+              <li key={reminder.id}>
+                <ReminderListItem
+                  reminder={reminder}
+                  showActions={false}
+                  partnerName={partnerName}
+                  userNameById={membersNameMap}
+                  currentUserId={user?.id}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );
 }
 
 function StatCell({
-  icon: Icon,
   label,
   value,
-  highlight,
-  tone = "light",
+  highlight = false,
 }: {
-  icon: typeof User;
   label: string;
   value: number;
-  highlight?: "urgent";
-  tone?: "light" | "dark";
+  highlight?: boolean;
 }) {
-  const isUrgent = highlight === "urgent" && value > 0;
-  const isDark = tone === "dark";
-  const iconColor = isUrgent
-    ? "text-destructive"
-    : isDark
-      ? value > 0
-        ? "text-accent"
-        : "text-background/35"
-      : value > 0
-        ? "text-foreground/80"
-        : "text-muted-foreground/60";
-  const valueColor = isUrgent
-    ? "text-destructive"
-    : isDark
-      ? "text-background"
-      : "text-foreground";
-  const labelColor = isUrgent
-    ? "text-destructive/80"
-    : isDark
-      ? "text-background/60"
-      : "text-muted-foreground";
+  const active = value > 0;
   return (
-    <div className="flex flex-col items-center justify-center gap-2.5 px-2 py-2">
-      <Icon
-        className={cn("size-[20px]", iconColor, isUrgent && "animate-pulse-dot")}
-        strokeWidth={1.8}
-      />
+    <div className="flex flex-col items-start gap-3 px-4 py-5">
       <span
         className={cn(
-          "text-[44px] font-medium leading-none tabular-nums tracking-tight",
-          valueColor,
-        )}
-      >
-        {value}
-      </span>
-      <p
-        className={cn(
-          "text-[10px] font-medium uppercase tracking-[0.14em]",
-          labelColor,
+          "label-mono",
+          highlight && active && "text-destructive animate-pulse-dot",
         )}
       >
         {label}
-      </p>
+      </span>
+      <span
+        className={cn(
+          "text-[48px] font-medium leading-none tabular-nums tracking-tight",
+          highlight && active
+            ? "text-destructive"
+            : active
+              ? "text-foreground"
+              : "text-muted-foreground/40",
+        )}
+      >
+        {String(value).padStart(2, "0")}
+      </span>
     </div>
   );
 }
+

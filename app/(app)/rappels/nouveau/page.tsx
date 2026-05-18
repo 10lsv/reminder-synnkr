@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createReminder } from "@/app/actions/reminders";
 import { ReminderForm } from "@/components/features/ReminderForm";
-import { Card, CardContent } from "@/components/ui/Card";
 import { listUserCategories } from "@/lib/categories";
 import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
@@ -19,34 +18,29 @@ export default async function NouveauRappelPage() {
   ]);
 
   return (
-    <div className="page-enter space-y-6">
-      <header className="space-y-1 pt-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Programmer
-        </p>
-        <h1 className="text-[26px] font-medium tracking-tight">Nouveau rappel</h1>
-        <p className="text-sm text-muted-foreground">
-          Écris-toi un message. Ton toi du futur le lira.
-        </p>
-      </header>
+    <div className="page-enter -mx-4 divide-y divide-foreground border-y border-foreground">
+      <section className="px-4 py-6">
+        <p className="brand-mark text-muted-foreground">Programmer</p>
+        <h1 className="mt-2 text-[34px] font-medium leading-none tracking-tight">
+          Nouveau rappel.
+        </h1>
+      </section>
 
-      <Card padding="lg">
-        <CardContent>
-          <ReminderForm
-            action={createReminder}
-            partner={
-              partner
-                ? {
-                    id: partner.id,
-                    name: partner.display_name ?? "ton associé",
-                  }
-                : null
-            }
-            existingCategories={existingCategories}
-            submitLabel="Programmer"
-          />
-        </CardContent>
-      </Card>
+      <section className="px-4 py-6">
+        <ReminderForm
+          action={createReminder}
+          partner={
+            partner
+              ? {
+                  id: partner.id,
+                  name: partner.display_name ?? "ton associé",
+                }
+              : null
+          }
+          existingCategories={existingCategories}
+          submitLabel="Programmer →"
+        />
+      </section>
     </div>
   );
 }

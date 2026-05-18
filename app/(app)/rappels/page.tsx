@@ -1,10 +1,9 @@
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/features/CategoryFilter";
 import { ReminderFilters } from "@/components/features/ReminderFilters";
 import { ReminderListItem } from "@/components/features/ReminderListItem";
 import { ReminderSearch } from "@/components/features/ReminderSearch";
-import { button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
 import { getMembersNameMap, getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -38,9 +37,6 @@ export default async function RappelsPage({
   const filter = parseFilter(rawFilter);
   const category = rawCategory?.trim() || null;
   const q = rawQ?.trim() || null;
-  // Le param `priority` reste actif côté URL (bookmarks, deep links) même si
-  // l'UI de chips a été retirée pour épurer. L'urgent reste visuellement
-  // identifiable dans la liste (fond rouge).
   const priorityFilter = (
     rawPriority === "urgent" || rawPriority === "low" || rawPriority === "normal"
       ? rawPriority
@@ -80,8 +76,6 @@ export default async function RappelsPage({
     ),
   ).sort((a, b) => a.localeCompare(b, "fr"));
 
-  // Tri urgent-first puis date asc. Postgres ordering :
-  // priority = string lexicographic, descending → urgent > normal > low.
   let query = supabase
     .from("reminders")
     .select("*")
@@ -100,74 +94,71 @@ export default async function RappelsPage({
   const isFirstTime = (totalCount ?? 0) === 0;
 
   return (
-    <div className="page-enter space-y-6">
-      <header className="flex items-end justify-between gap-4 pt-2">
-        <div className="space-y-1">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Mes rappels
-          </p>
-          <h1 className="text-[26px] font-medium tracking-tight">
-            <span className="tabular-nums">{pendingCount ?? 0}</span>{" "}
-            <span className="text-muted-foreground">en attente</span>
+    <div className="page-enter -mx-4 divide-y divide-foreground border-y border-foreground">
+      <section className="flex items-end justify-between gap-4 px-4 py-6">
+        <div>
+          <p className="brand-mark text-muted-foreground">Rappels</p>
+          <h1 className="mt-2 text-[34px] font-medium leading-none tracking-tight tabular-nums">
+            {pendingCount ?? 0}
+            <span className="ml-2 font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+              en attente
+            </span>
           </h1>
         </div>
         <Link
           href="/rappels/nouveau"
-          className={button({ variant: "primary", size: "sm" })}
+          className="inline-flex items-center gap-2 border border-foreground bg-foreground px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-background transition-colors hover:bg-background hover:text-foreground"
         >
           Nouveau
+          <ArrowUpRight size={12} strokeWidth={2} />
         </Link>
-      </header>
+      </section>
 
-      <div className="space-y-4">
+      <section className="space-y-3 px-4 py-4">
         <ReminderSearch />
         <ReminderFilters />
         {categories.length > 0 && <CategoryFilter categories={categories} />}
-      </div>
+      </section>
 
       {isEmpty ? (
-        <Card padding="lg">
-          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-            {isFirstTime ? (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  Aucun rappel pour l&apos;instant.
-                </p>
-                <Link
-                  href="/rappels/nouveau"
-                  className={button({
-                    variant: "primary",
-                    size: "sm",
-                    className: "mt-2",
-                  })}
-                >
-                  Créer mon premier rappel
-                </Link>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Aucun rappel ne correspond aux filtres.
+        <section className="px-4 py-10">
+          {isFirstTime ? (
+            <>
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                // vide
               </p>
-            )}
-          </CardContent>
-        </Card>
+              <p className="mt-3 text-xl font-medium">
+                Aucun rappel pour l&apos;instant.
+              </p>
+              <Link
+                href="/rappels/nouveau"
+                className="mt-6 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground hover:underline"
+              >
+                Créer le premier
+                <ArrowUpRight size={14} strokeWidth={2} />
+              </Link>
+            </>
+          ) : (
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              // aucun rappel ne correspond aux filtres
+            </p>
+          )}
+        </section>
       ) : (
-        <Card padding="lg">
-          <CardContent className="space-y-0">
-            <ul className="flex flex-col">
-              {list.map((reminder) => (
-                <li key={reminder.id}>
-                  <ReminderListItem
-                    reminder={reminder}
-                    partnerName={partner?.display_name ?? null}
-                    userNameById={membersNameMap}
-                    currentUserId={user?.id}
-                  />
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <section className="px-4">
+          <ul className="divide-y divide-border">
+            {list.map((reminder) => (
+              <li key={reminder.id}>
+                <ReminderListItem
+                  reminder={reminder}
+                  partnerName={partner?.display_name ?? null}
+                  userNameById={membersNameMap}
+                  currentUserId={user?.id}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

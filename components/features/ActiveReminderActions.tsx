@@ -14,9 +14,9 @@ const SNOOZE_MAX_CHARS = 500;
 type SnoozeOptionValue = "10" | "30" | "60" | "tomorrow";
 
 const snoozeOptions: { value: SnoozeOptionValue; label: string }[] = [
-  { value: "10", label: "10 min" },
-  { value: "30", label: "30 min" },
-  { value: "60", label: "1h" },
+  { value: "10", label: "+10m" },
+  { value: "30", label: "+30m" },
+  { value: "60", label: "+1h" },
   { value: "tomorrow", label: "Demain 8h" },
 ];
 
@@ -34,8 +34,8 @@ function computeSnoozeUntilIso(option: SnoozeOptionValue): string {
 function DoneSubmit() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" variant="primary" fullWidth disabled={pending}>
-      {pending ? "Enregistrement…" : "Fait"}
+    <Button type="submit" variant="primary" fullWidth size="lg" disabled={pending}>
+      {pending ? "…" : "✓ Fait"}
     </Button>
   );
 }
@@ -47,12 +47,16 @@ function ConfirmSubmit({ disabled }: { disabled: boolean }) {
       type="submit"
       variant="primary"
       fullWidth
+      size="lg"
       disabled={disabled || pending}
     >
-      {pending ? "Enregistrement…" : "Confirmer"}
+      {pending ? "…" : "Confirmer →"}
     </Button>
   );
 }
+
+const SNOOZE_CHIP =
+  "shrink-0 border px-3 py-1.5 cursor-pointer touch-manipulation transition-colors font-mono text-[10px] uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground";
 
 function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
   const boundAction = snoozeReminder.bind(null, id);
@@ -64,15 +68,13 @@ function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
   const remaining = SNOOZE_MIN_CHARS - trimmedLength;
   const tooShort = remaining > 0;
 
-  // ISO calculé dans la TZ du navigateur — important pour "Demain 8h"
-  // (un user à Paris veut 8h Paris, pas 8h UTC).
   const snoozeUntilIso = useMemo(() => computeSnoozeUntilIso(option), [option]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-muted-foreground">Repousser de…</p>
-        <div className="flex flex-wrap gap-2">
+        <p className="label-mono">Repousser de</p>
+        <div className="flex flex-wrap gap-1.5">
           {snoozeOptions.map((opt) => {
             const active = option === opt.value;
             return (
@@ -82,12 +84,10 @@ function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
                 onClick={() => setOption(opt.value)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-full border px-[14px] py-2 text-sm cursor-pointer touch-manipulation",
-                  "transition-colors duration-150 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  SNOOZE_CHIP,
                   active
                     ? "border-foreground bg-foreground text-background"
-                    : "border-border bg-transparent text-foreground hover:border-muted-foreground",
+                    : "border-border bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground",
                 )}
               >
                 {opt.label}
@@ -100,7 +100,8 @@ function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
       <Textarea
         name="reason"
         autoFocus
-        rows={4}
+        rows={3}
+        label="Excuse"
         placeholder="Pourquoi pas maintenant ?"
         value={reason}
         onChange={(e) => setReason(e.target.value)}
@@ -108,22 +109,24 @@ function SnoozeForm({ id, onCancel }: { id: string; onCancel: () => void }) {
         error={state.error ?? undefined}
         required
       />
-      <p className="text-sm text-muted-foreground">
+      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
         {tooShort
-          ? `Encore ${remaining} caractère${remaining > 1 ? "s" : ""} minimum`
+          ? `Encore ${remaining} car. min`
           : `${trimmedLength}/${SNOOZE_MAX_CHARS}`}
       </p>
 
       <input type="hidden" name="snoozeUntil" value={snoozeUntilIso} />
 
-      <ConfirmSubmit disabled={tooShort} />
-      <button
-        type="button"
-        onClick={onCancel}
-        className="cursor-pointer text-sm text-muted-foreground underline-offset-4 hover:underline"
-      >
-        Annuler
-      </button>
+      <div className="flex flex-col gap-2">
+        <ConfirmSubmit disabled={tooShort} />
+        <button
+          type="button"
+          onClick={onCancel}
+          className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground hover:underline"
+        >
+          Annuler
+        </button>
+      </div>
     </form>
   );
 }
@@ -136,23 +139,25 @@ export function ActiveReminderActions({ id }: { id: string }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <form action={markAsDone.bind(null, id)} className="w-full">
+    <div className="flex flex-col gap-3">
+      <form action={markAsDone.bind(null, id)}>
         <DoneSubmit />
       </form>
-      <button
-        type="button"
-        onClick={() => setSnoozing(true)}
-        className="cursor-pointer text-base text-muted-foreground underline-offset-4 hover:underline"
-      >
-        Plus tard
-      </button>
-      <Link
-        href={`/rappels/${id}`}
-        className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-      >
-        Modifier
-      </Link>
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.14em]">
+        <button
+          type="button"
+          onClick={() => setSnoozing(true)}
+          className="cursor-pointer text-muted-foreground hover:text-foreground hover:underline"
+        >
+          Plus tard
+        </button>
+        <Link
+          href={`/rappels/${id}`}
+          className="text-muted-foreground hover:text-foreground hover:underline"
+        >
+          Modifier →
+        </Link>
+      </div>
     </div>
   );
 }

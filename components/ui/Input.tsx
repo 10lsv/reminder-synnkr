@@ -6,6 +6,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
+// Brutalist: pas de border-radius, border bottom only (style "form"),
+// label uppercase mono.
 export function Input({
   label,
   error,
@@ -20,10 +22,7 @@ export function Input({
   return (
     <div className="flex w-full flex-col gap-2">
       {label && (
-        <label
-          htmlFor={inputId}
-          className="text-sm font-medium leading-none text-foreground"
-        >
+        <label htmlFor={inputId} className="label-mono">
           {label}
         </label>
       )}
@@ -32,19 +31,19 @@ export function Input({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         className={cn(
-          "h-9 w-full min-w-0 rounded-lg border border-input bg-transparent px-3 text-base text-foreground",
+          "h-10 w-full min-w-0 border-0 border-b border-input bg-transparent px-0 text-base text-foreground",
           "transition-colors outline-none",
-          "placeholder:text-muted-foreground",
-          "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+          "placeholder:text-muted-foreground/70",
+          "focus-visible:border-foreground focus-visible:border-b-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
           "md:text-sm",
-          error && "border-destructive ring-3 ring-destructive/20",
+          error && "border-destructive border-b-2",
           className,
         )}
         {...props}
       />
       {error && (
-        <p id={errorId} className="text-xs text-destructive">
+        <p id={errorId} className="font-mono text-[11px] uppercase tracking-wider text-destructive">
           {error}
         </p>
       )}

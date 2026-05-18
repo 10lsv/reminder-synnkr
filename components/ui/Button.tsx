@@ -1,36 +1,40 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+// Brutalist: angles vifs, borders 1px, mono uppercase pour les labels, pas
+// d'ombre, pas de hover lift (juste color/bg flip).
 export const button = cva(
   [
-    "inline-flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation",
-    "rounded-lg border border-transparent text-sm font-medium whitespace-nowrap",
-    "transition-all duration-200 ease-out outline-none select-none transform-gpu",
-    "hover:-translate-y-px active:scale-[0.97] active:translate-y-0 active:duration-75",
-    "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-    "disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0",
-    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+    "inline-flex items-center justify-center gap-2 cursor-pointer touch-manipulation",
+    "border border-foreground text-[11px] font-mono font-medium tracking-[0.12em] uppercase whitespace-nowrap",
+    "transition-colors duration-100 ease-out outline-none select-none",
+    "focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "active:opacity-80",
+    "disabled:pointer-events-none disabled:opacity-40",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
   ],
   {
     variants: {
       variant: {
-        primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+        primary:
+          "bg-foreground text-background hover:bg-background hover:text-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-background text-foreground hover:bg-foreground hover:text-background",
         outline:
-          "border-border bg-background text-foreground hover:bg-muted",
+          "bg-transparent text-foreground hover:bg-foreground hover:text-background",
         ghost:
-          "text-muted-foreground hover:bg-muted hover:text-foreground",
+          "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted",
         success:
-          "bg-success text-white hover:bg-success/90",
+          "border-success bg-success text-background hover:bg-background hover:text-success",
         danger:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:ring-destructive/20",
-        link: "text-foreground underline-offset-4 hover:underline",
+          "border-destructive bg-background text-destructive hover:bg-destructive hover:text-background",
+        link:
+          "border-transparent text-foreground underline underline-offset-4 hover:no-underline",
       },
       size: {
-        default: "h-9 px-3",
-        sm: "h-8 px-2.5 text-[0.8rem] rounded-md",
-        lg: "h-10 px-4",
+        default: "h-9 px-4",
+        sm: "h-8 px-3",
+        lg: "h-11 px-5 text-[12px]",
       },
       fullWidth: {
         true: "w-full",

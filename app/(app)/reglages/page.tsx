@@ -1,7 +1,6 @@
 import { signOut } from "@/app/actions/auth";
 import { NotificationsSettings } from "@/components/features/NotificationsSettings";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
 import { getPartner } from "@/lib/circle";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,61 +12,51 @@ export default async function ReglagesPage() {
   const partner = user ? await getPartner(supabase, user.id) : null;
 
   return (
-    <div className="page-enter space-y-6">
-      <header className="space-y-1 pt-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Préférences
-        </p>
-        <h1 className="text-[26px] font-medium tracking-tight">Réglages</h1>
-      </header>
+    <div className="page-enter -mx-4 divide-y divide-foreground border-y border-foreground">
+      <section className="px-4 py-6">
+        <p className="brand-mark text-muted-foreground">Préférences</p>
+        <h1 className="mt-2 text-[34px] font-medium leading-none tracking-tight">
+          Réglages.
+        </h1>
+      </section>
 
-      <Card padding="lg">
-        <CardContent className="space-y-4">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Notifications
-          </p>
-          <NotificationsSettings />
-        </CardContent>
-      </Card>
+      <section className="px-4 py-5">
+        <p className="label-mono mb-4">Notifications</p>
+        <NotificationsSettings />
+      </section>
 
       {partner && (
-        <Card padding="lg">
-          <CardContent className="space-y-3">
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Associé
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-accent/40 text-sm font-medium text-accent-foreground">
-                {(partner.display_name ?? "?").charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 space-y-0.5">
-                <p className="text-sm font-medium">
-                  {partner.display_name ?? "Ton associé"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Tu partages les rappels marqués « commun ».
-                </p>
-              </div>
+        <section className="px-4 py-5">
+          <p className="label-mono mb-4">Associé</p>
+          <div className="flex items-center gap-4">
+            <div className="flex size-10 items-center justify-center border border-foreground bg-foreground font-mono text-sm font-medium text-background">
+              {(partner.display_name ?? "?").charAt(0).toUpperCase()}
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex-1">
+              <p className="text-[15px] font-medium">
+                {partner.display_name ?? "Ton associé"}
+              </p>
+              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                Partage actif
+              </p>
+            </div>
+          </div>
+        </section>
       )}
 
-      <Card padding="lg">
-        <CardContent className="space-y-4">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Compte
+      <section className="px-4 py-5">
+        <p className="label-mono mb-4">Compte</p>
+        {user?.email && (
+          <p className="mb-4 font-mono text-[12px] text-muted-foreground">
+            {user.email}
           </p>
-          {user?.email && (
-            <p className="text-sm text-muted-foreground">{user.email}</p>
-          )}
-          <form action={signOut} className="w-full">
-            <Button type="submit" variant="primary" fullWidth size="sm">
-              Se déconnecter
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        )}
+        <form action={signOut} className="w-full">
+          <Button type="submit" variant="danger" fullWidth size="sm">
+            Se déconnecter
+          </Button>
+        </form>
+      </section>
     </div>
   );
 }

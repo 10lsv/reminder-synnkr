@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { LocalTime } from "@/components/features/LocalTime";
-import { Card, CardContent } from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ExcusesPage() {
@@ -13,67 +12,64 @@ export default async function ExcusesPage() {
   const list = excuses ?? [];
 
   return (
-    <div className="page-enter space-y-6">
-      <header className="space-y-1 pt-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Archives
-        </p>
-        <h1 className="text-[26px] font-medium tracking-tight">Tes excuses</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="page-enter -mx-4 divide-y divide-foreground border-y border-foreground">
+      <section className="px-4 py-6">
+        <p className="brand-mark text-muted-foreground">Archives</p>
+        <h1 className="mt-2 text-[34px] font-medium leading-none tracking-tight">
+          Tes excuses.
+        </h1>
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
           {list.length === 0
-            ? "Pas encore d'excuse — tu honores tes rappels."
-            : `${list.length} raison${list.length > 1 ? "s" : ""} archivée${list.length > 1 ? "s" : ""}.`}
+            ? "// rien à confesser"
+            : `${String(list.length).padStart(2, "0")} raison${list.length > 1 ? "s" : ""} archivée${list.length > 1 ? "s" : ""}`}
         </p>
-      </header>
+      </section>
 
       {list.length > 0 && (
-        <Card padding="lg">
-          <CardContent>
-            <ul className="space-y-0">
-              {list.map((excuse) => {
-                const linkedReminder = Array.isArray(excuse.reminders)
-                  ? excuse.reminders[0]
-                  : excuse.reminders;
-                return (
-                  <li
-                    key={excuse.id}
-                    className="space-y-1.5 border-b border-border/60 py-4 first:pt-0 last:border-b-0 last:pb-0"
-                  >
-                    <p className="text-[15px] leading-snug italic text-foreground">
-                      « {excuse.reason} »
-                    </p>
-                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-muted-foreground">
-                      {excuse.created_at && (
-                        <span>
-                          <LocalTime iso={excuse.created_at} />
-                        </span>
-                      )}
-                      {linkedReminder && (
-                        <>
-                          <span aria-hidden>·</span>
-                          <Link
-                            href={`/rappels/${linkedReminder.id}`}
-                            className="line-clamp-1 underline-offset-4 hover:underline"
-                          >
-                            « {linkedReminder.message} »
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </CardContent>
-        </Card>
+        <section className="px-4">
+          <ul className="divide-y divide-border">
+            {list.map((excuse) => {
+              const linkedReminder = Array.isArray(excuse.reminders)
+                ? excuse.reminders[0]
+                : excuse.reminders;
+              return (
+                <li key={excuse.id} className="py-5 first:pt-6 last:pb-6">
+                  <p className="text-[15px] leading-snug italic text-foreground">
+                    « {excuse.reason} »
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                    {excuse.created_at && (
+                      <span>
+                        <LocalTime iso={excuse.created_at} />
+                      </span>
+                    )}
+                    {linkedReminder && (
+                      <>
+                        <span aria-hidden>·</span>
+                        <Link
+                          href={`/rappels/${linkedReminder.id}`}
+                          className="line-clamp-1 normal-case tracking-normal hover:underline"
+                        >
+                          « {linkedReminder.message} »
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
-      <Link
-        href="/"
-        className="inline-block text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-      >
-        ← Retour à l&apos;accueil
-      </Link>
+      <section className="px-4 py-5">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground hover:underline"
+        >
+          ← Retour
+        </Link>
+      </section>
     </div>
   );
 }

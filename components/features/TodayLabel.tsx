@@ -1,12 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatDateLong } from "@/lib/dates";
+import { formatDateLong, formatDateStamp } from "@/lib/dates";
 
-export function TodayLabel({ fallback = "" }: { fallback?: string }) {
+type Mode = "long" | "stamp";
+
+export function TodayLabel({
+  fallback = "",
+  mode = "long",
+}: {
+  fallback?: string;
+  mode?: Mode;
+}) {
   const [text, setText] = useState<string>(fallback);
   useEffect(() => {
-    setText(formatDateLong(new Date()));
-  }, []);
+    setText(
+      mode === "stamp"
+        ? formatDateStamp(new Date())
+        : formatDateLong(new Date()),
+    );
+  }, [mode]);
   return <>{text}</>;
 }

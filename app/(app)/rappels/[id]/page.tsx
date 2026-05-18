@@ -3,7 +3,6 @@ import { markAsDone, updateReminder } from "@/app/actions/reminders";
 import { DeleteReminderButton } from "@/components/features/DeleteReminderButton";
 import { ReminderForm } from "@/components/features/ReminderForm";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
 import { listUserCategories } from "@/lib/categories";
 import { getPartner } from "@/lib/circle";
 import { RECURRENCE_VALUES, type Recurrence } from "@/lib/recurrence";
@@ -53,56 +52,52 @@ export default async function RappelDetailPage({
   const isDone = reminder.status === "done";
 
   return (
-    <div className="page-enter space-y-6">
-      <header className="space-y-1 pt-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Édition
-        </p>
-        <h1 className="text-[26px] font-medium tracking-tight">Modifier</h1>
-      </header>
+    <div className="page-enter -mx-4 divide-y divide-foreground border-y border-foreground">
+      <section className="px-4 py-6">
+        <p className="brand-mark text-muted-foreground">Édition</p>
+        <h1 className="mt-2 text-[34px] font-medium leading-none tracking-tight">
+          Modifier.
+        </h1>
+      </section>
 
-      <Card padding="lg">
-        <CardContent>
-          <ReminderForm
-            action={boundUpdate}
-            partner={
-              partner
-                ? {
-                    id: partner.id,
-                    name: partner.display_name ?? "ton associé",
-                  }
-                : null
-            }
-            existingCategories={existingCategories}
-            initialData={{
-              message: reminder.message,
-              scheduledAt: reminder.scheduled_at,
-              recurrence: toRecurrence(reminder.recurrence),
-              category: reminder.category,
-              scope: reminder.circle_id ? "shared" : "personal",
-              priority: toPriority(reminder.priority),
-            }}
-            submitLabel="Enregistrer"
-          />
-        </CardContent>
-      </Card>
+      <section className="px-4 py-6">
+        <ReminderForm
+          action={boundUpdate}
+          partner={
+            partner
+              ? {
+                  id: partner.id,
+                  name: partner.display_name ?? "ton associé",
+                }
+              : null
+          }
+          existingCategories={existingCategories}
+          initialData={{
+            message: reminder.message,
+            scheduledAt: reminder.scheduled_at,
+            recurrence: toRecurrence(reminder.recurrence),
+            category: reminder.category,
+            scope: reminder.circle_id ? "shared" : "personal",
+            priority: toPriority(reminder.priority),
+          }}
+          submitLabel="Enregistrer →"
+        />
+      </section>
 
-      <Card padding="lg">
-        <CardContent className="flex flex-wrap items-center justify-between gap-3">
-          {isDone ? (
-            <p className="text-sm text-muted-foreground">
-              Ce rappel est déjà marqué fait.
-            </p>
-          ) : (
-            <form action={markAsDone.bind(null, id)}>
-              <Button type="submit" variant="success" size="sm">
-                Marquer comme fait
-              </Button>
-            </form>
-          )}
-          <DeleteReminderButton id={id} />
-        </CardContent>
-      </Card>
+      <section className="flex flex-wrap items-center justify-between gap-3 px-4 py-5">
+        {isDone ? (
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-success">
+            ✓ déjà marqué fait
+          </p>
+        ) : (
+          <form action={markAsDone.bind(null, id)}>
+            <Button type="submit" variant="success" size="sm">
+              ✓ Marquer fait
+            </Button>
+          </form>
+        )}
+        <DeleteReminderButton id={id} />
+      </section>
     </div>
   );
 }

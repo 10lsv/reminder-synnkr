@@ -47,24 +47,13 @@ const priorityChips: { value: Priority; label: string }[] = [
   { value: "urgent", label: "Urgent" },
 ];
 
-function priorityActiveClass(value: Priority): string {
-  switch (value) {
-    case "urgent":
-      return "bg-destructive text-destructive-foreground border-destructive";
-    case "low":
-      return "bg-muted text-muted-foreground border-muted-foreground/40";
-    default:
-      return "bg-foreground text-background border-foreground";
-  }
-}
-
 const CATEGORY_MAX = 30;
 
 const recurrenceChips: { value: Recurrence; label: string }[] = [
-  { value: "none", label: "Ponctuel" },
-  { value: "daily", label: "Quotidien" },
-  { value: "weekly", label: "Hebdo" },
-  { value: "monthly", label: "Mensuel" },
+  { value: "none", label: "Once" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
 ];
 
 const initialState: ReminderFormState = { error: null };
@@ -77,11 +66,11 @@ type Chip =
   | { kind: "custom"; label: string };
 
 const chips: Chip[] = [
-  { kind: "preset", value: "1h", label: "Dans 1h" },
-  { kind: "preset", value: "ce-soir", label: "Ce soir 20h" },
+  { kind: "preset", value: "1h", label: "+1h" },
+  { kind: "preset", value: "ce-soir", label: "20h" },
   { kind: "preset", value: "demain-8h", label: "Demain 8h" },
   { kind: "preset", value: "demain-18h", label: "Demain 18h" },
-  { kind: "custom", label: "Personnalisé" },
+  { kind: "custom", label: "Custom" },
 ];
 
 function detectPresetFromDate(date: Date): Preset | null {
@@ -96,20 +85,18 @@ function detectPresetFromDate(date: Date): Preset | null {
   return null;
 }
 
-const ROW_CHIP_BASE =
-  "shrink-0 rounded-full border px-3 py-1.5 text-xs cursor-pointer touch-manipulation transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-
-const ROW_CHIP_INACTIVE =
-  "border-border bg-transparent text-foreground hover:border-muted-foreground";
-
-const ROW_CHIP_ACTIVE = "border-foreground bg-foreground text-background";
+const CHIP_BASE =
+  "shrink-0 border px-3 py-1.5 cursor-pointer touch-manipulation transition-colors font-mono text-[10px] uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground disabled:cursor-not-allowed disabled:opacity-40";
+const CHIP_ON = "border-foreground bg-foreground text-background";
+const CHIP_OFF =
+  "border-border bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground";
 
 export function ReminderForm({
   action,
   initialData,
   partner = null,
   existingCategories = [],
-  submitLabel = "Programmer",
+  submitLabel = "Programmer →",
 }: ReminderFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const [message, setMessage] = useState(initialData?.message ?? "");
@@ -164,12 +151,12 @@ export function ReminderForm({
     selection !== "custom" && datetimeValue ? new Date(datetimeValue) : null;
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form action={formAction} className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <Textarea
           name="message"
-          label="Ton message"
-          placeholder="Léo, t'avais promis..."
+          label="Message"
+          placeholder="Léo, t'avais promis…"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           maxLength={MAX}
@@ -177,16 +164,14 @@ export function ReminderForm({
           autoFocus
           rows={4}
         />
-        <span className="self-end text-xs text-muted-foreground tabular-nums">
+        <span className="self-end font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground tabular-nums">
           {message.length}/{MAX}
         </span>
       </div>
 
       <div className="flex flex-col gap-3">
-        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          Quand ?
-        </span>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <span className="label-mono">Quand</span>
+        <div className="-mx-1 flex flex-wrap gap-1.5 px-1">
           {chips.map((chip) => {
             const active =
               chip.kind === "preset"
@@ -203,10 +188,7 @@ export function ReminderForm({
                 onClick={() => onChipClick(chip)}
                 disabled={disabled}
                 aria-pressed={active}
-                className={cn(
-                  ROW_CHIP_BASE,
-                  active ? ROW_CHIP_ACTIVE : ROW_CHIP_INACTIVE,
-                )}
+                className={cn(CHIP_BASE, active ? CHIP_ON : CHIP_OFF)}
               >
                 {chip.label}
               </button>
@@ -215,7 +197,7 @@ export function ReminderForm({
         </div>
 
         {previewDate && (
-          <p className="text-xs italic text-muted-foreground">
+          <p className="font-mono text-[11px] italic text-muted-foreground">
             → {formatPreview(previewDate)}
           </p>
         )}
@@ -238,10 +220,8 @@ export function ReminderForm({
       </div>
 
       <div className="flex flex-col gap-3">
-        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          Répétition
-        </span>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <span className="label-mono">Répétition</span>
+        <div className="-mx-1 flex flex-wrap gap-1.5 px-1">
           {recurrenceChips.map((chip) => {
             const active = recurrence === chip.value;
             return (
@@ -250,10 +230,7 @@ export function ReminderForm({
                 type="button"
                 onClick={() => setRecurrence(chip.value)}
                 aria-pressed={active}
-                className={cn(
-                  ROW_CHIP_BASE,
-                  active ? ROW_CHIP_ACTIVE : ROW_CHIP_INACTIVE,
-                )}
+                className={cn(CHIP_BASE, active ? CHIP_ON : CHIP_OFF)}
               >
                 {chip.label}
               </button>
@@ -264,12 +241,11 @@ export function ReminderForm({
       </div>
 
       <div className="flex flex-col gap-3">
-        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          Priorité
-        </span>
-        <div className="grid grid-cols-3 gap-2">
+        <span className="label-mono">Priorité</span>
+        <div className="grid grid-cols-3 gap-1.5">
           {priorityChips.map((chip) => {
             const active = priority === chip.value;
+            const isUrgent = chip.value === "urgent";
             return (
               <button
                 key={chip.value}
@@ -277,11 +253,13 @@ export function ReminderForm({
                 onClick={() => setPriority(chip.value)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-md border px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  CHIP_BASE,
+                  "justify-center",
                   active
-                    ? priorityActiveClass(chip.value)
-                    : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
+                    ? isUrgent
+                      ? "border-destructive bg-destructive text-background"
+                      : CHIP_ON
+                    : CHIP_OFF,
                 )}
               >
                 {chip.label}
@@ -292,7 +270,7 @@ export function ReminderForm({
         <input type="hidden" name="priority" value={priority} />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <Input
           name="category"
           label="Catégorie (optionnel)"
@@ -302,7 +280,7 @@ export function ReminderForm({
           maxLength={CATEGORY_MAX}
         />
         {existingCategories.length > 0 && (
-          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="-mx-1 flex flex-wrap gap-1.5 px-1">
             {existingCategories.map((c) => {
               const active = category.trim().toLowerCase() === c.toLowerCase();
               return (
@@ -311,12 +289,7 @@ export function ReminderForm({
                   type="button"
                   onClick={() => setCategory(active ? "" : c)}
                   aria-pressed={active}
-                  className={cn(
-                    "shrink-0 rounded-full border px-3 py-1 text-xs uppercase tracking-wider cursor-pointer transition-colors",
-                    active
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
-                  )}
+                  className={cn(CHIP_BASE, active ? CHIP_ON : CHIP_OFF)}
                 >
                   {c}
                 </button>
@@ -327,7 +300,7 @@ export function ReminderForm({
       </div>
 
       {partnerName && (
-        <label className="flex cursor-pointer items-center gap-3 rounded-md border border-border/60 px-3 py-2 text-sm text-foreground hover:border-muted-foreground transition-colors">
+        <label className="flex cursor-pointer items-center gap-3 border border-border px-3 py-2.5 hover:border-foreground transition-colors">
           <input
             type="checkbox"
             checked={scope === "shared"}
@@ -336,17 +309,19 @@ export function ReminderForm({
             }
             className="size-4 cursor-pointer accent-foreground"
           />
-          <span>Partager avec {partnerName}</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground">
+            Partager avec {partnerName}
+          </span>
           <input type="hidden" name="scope" value={scope} />
         </label>
       )}
 
-      <Button type="submit" variant="primary" fullWidth disabled={pending}>
+      <Button type="submit" variant="primary" fullWidth size="lg" disabled={pending}>
         {pending ? "Envoi…" : submitLabel}
       </Button>
 
       {state.error && (
-        <p role="alert" className="text-center text-sm text-destructive">
+        <p role="alert" className="text-center font-mono text-[11px] uppercase tracking-[0.14em] text-destructive">
           {state.error}
         </p>
       )}

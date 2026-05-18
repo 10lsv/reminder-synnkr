@@ -30,37 +30,38 @@ export function CategoryFilter({ categories }: CategoryFilterProps) {
     });
   };
 
+  const all = [{ value: "", label: "All" }, ...categories.map((c) => ({ value: c, label: c }))];
+
   return (
     <div
       role="group"
       aria-label="Filtre catégorie"
-      className="-mx-1 flex gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="-mx-1 flex gap-px overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      {[{ value: "", label: "Toutes" }, ...categories.map((c) => ({ value: c, label: c }))].map(
-        ({ value, label }) => {
-          const active = current === value;
-          return (
-            <button
-              key={value || "__all__"}
-              type="button"
-              aria-pressed={active}
-              disabled={pending}
-              onClick={() => setCategory(value)}
-              className={cn(
-                "shrink-0 rounded-full border px-2.5 py-0.5 text-xs uppercase tracking-wider cursor-pointer touch-manipulation",
-                "transition-colors duration-150 ease-out",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-                active
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-transparent text-muted-foreground hover:border-muted-foreground",
-              )}
-            >
-              {label}
-            </button>
-          );
-        },
-      )}
+      {all.map(({ value, label }) => {
+        const active = current === value;
+        return (
+          <button
+            key={value || "__all__"}
+            type="button"
+            aria-pressed={active}
+            disabled={pending}
+            onClick={() => setCategory(value)}
+            className={cn(
+              "shrink-0 border px-2.5 py-1 cursor-pointer touch-manipulation",
+              "font-mono text-[10px] uppercase tracking-[0.14em]",
+              "transition-colors duration-100",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              active
+                ? "border-foreground bg-foreground text-background"
+                : "border-border bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground",
+            )}
+          >
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }

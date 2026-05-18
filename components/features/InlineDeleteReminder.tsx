@@ -1,9 +1,8 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { deleteReminder } from "@/app/actions/reminders";
-import { cn } from "@/lib/utils";
 
 interface Props {
   id: string;
@@ -14,8 +13,6 @@ export function InlineDeleteReminder({ id, label = "Supprimer" }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  // Auto-collapse l'état "confirming" après 5s d'inactivité (cohérent avec
-  // DeleteReminderButton sur la page d'édition).
   useEffect(() => {
     if (!confirming) return;
     const t = setTimeout(() => setConfirming(false), 5000);
@@ -28,26 +25,22 @@ export function InlineDeleteReminder({ id, label = "Supprimer" }: Props) {
         type="button"
         aria-label={label}
         onClick={() => setConfirming(true)}
-        className={cn(
-          "flex h-8 w-8 cursor-pointer items-center justify-center rounded-md",
-          "text-muted-foreground hover:text-destructive transition-colors duration-150 ease-out",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        )}
+        className="flex h-8 w-8 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
       >
-        <Trash2 size={14} strokeWidth={2} aria-hidden />
+        <X size={16} strokeWidth={2} aria-hidden />
       </button>
     );
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em]">
       <button
         type="button"
         onClick={() => setConfirming(false)}
         disabled={pending}
-        className="cursor-pointer text-sm text-muted-foreground underline-offset-4 hover:underline"
+        className="cursor-pointer text-muted-foreground hover:text-foreground"
       >
-        Annuler
+        Annul
       </button>
       <button
         type="button"
@@ -57,9 +50,9 @@ export function InlineDeleteReminder({ id, label = "Supprimer" }: Props) {
             await deleteReminder(id);
           })
         }
-        className="cursor-pointer text-sm text-destructive underline-offset-4 hover:underline"
+        className="cursor-pointer text-destructive hover:underline"
       >
-        {pending ? "…" : "Confirmer"}
+        {pending ? "…" : "OK"}
       </button>
     </div>
   );

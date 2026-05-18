@@ -180,30 +180,32 @@ export function NotificationsSettings() {
   }
 
   if (state.kind === "loading") {
-    return <p className="text-sm text-muted-foreground">Chargement…</p>;
+    return (
+      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        // chargement…
+      </p>
+    );
   }
 
   if (state.kind === "unsupported") {
     return (
-      <p className="text-sm text-muted-foreground">
-        Les notifications ne sont pas supportées sur ce navigateur.
+      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        // non supporté sur ce navigateur
       </p>
     );
   }
 
   if (state.kind === "needs-install") {
     return (
-      <div className="flex flex-col gap-3 text-sm">
-        <p className="text-foreground">
-          Pour activer les notifications, ajoute Reminder à ton écran
-          d&apos;accueil :
+      <div className="flex flex-col gap-3">
+        <p className="text-[14px] text-foreground">
+          Ajoute Reminder à ton écran d&apos;accueil pour activer les
+          notifications :
         </p>
-        <ol className="flex flex-col gap-1 pl-5 text-muted-foreground list-decimal">
-          <li>
-            Appuie sur <span aria-label="Partager">⤴</span> Partager
-          </li>
-          <li>Choisis &laquo;&nbsp;Ajouter à l&apos;écran d&apos;accueil&nbsp;&raquo;</li>
-          <li>Ouvre l&apos;app depuis son icône, reviens ici</li>
+        <ol className="flex flex-col gap-1.5 pl-4 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground list-decimal">
+          <li>Appuie sur ⤴ Partager</li>
+          <li>Ajouter à l&apos;écran d&apos;accueil</li>
+          <li>Ouvre depuis l&apos;icône, reviens ici</li>
         </ol>
       </div>
     );
@@ -211,9 +213,8 @@ export function NotificationsSettings() {
 
   if (state.kind === "permission-denied") {
     return (
-      <p className="text-sm text-muted-foreground">
-        Les notifications sont bloquées. Active-les depuis Réglages iOS →
-        Notifications → Reminder.
+      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        // bloqué — réglages iOS → notifications → reminder
       </p>
     );
   }
@@ -221,8 +222,8 @@ export function NotificationsSettings() {
   if (state.kind === "needs-permission") {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-muted-foreground">
-          Active les notifications pour recevoir tes rappels au moment voulu.
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          // inactif
         </p>
         <Button
           type="button"
@@ -231,10 +232,13 @@ export function NotificationsSettings() {
           disabled={busy}
           fullWidth
         >
-          {busy ? "Activation…" : "Activer les notifications"}
+          {busy ? "…" : "Activer →"}
         </Button>
         {feedback && (
-          <p role="alert" className="text-sm text-destructive">
+          <p
+            role="alert"
+            className="font-mono text-[11px] uppercase tracking-[0.14em] text-destructive"
+          >
             {feedback}
           </p>
         )}
@@ -243,31 +247,30 @@ export function NotificationsSettings() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <span
           aria-hidden
-          className="relative flex size-2"
-        >
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-          <span className="relative inline-flex size-2 rounded-full bg-success" />
-        </span>
-        <p className="text-sm text-foreground">
-          Notifications activées sur cet appareil.
+          className="size-1.5 bg-success animate-pulse-dot"
+        />
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground">
+          Actif sur cet appareil
         </p>
       </div>
-      <div className="flex items-center gap-6">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
-          variant="secondary"
+          variant="outline"
+          size="sm"
           onClick={handleTest}
           disabled={busy}
         >
-          {busy ? "Envoi…" : "Envoyer un test"}
+          {busy ? "…" : "Test"}
         </Button>
         <Button
           type="button"
           variant="danger"
+          size="sm"
           onClick={handleUnsubscribe}
           disabled={busy}
         >
@@ -278,7 +281,7 @@ export function NotificationsSettings() {
         <p
           role="status"
           aria-live="polite"
-          className="text-sm text-muted-foreground"
+          className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
         >
           {feedback}
         </p>
