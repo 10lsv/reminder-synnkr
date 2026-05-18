@@ -130,6 +130,8 @@ export function ReminderForm({
   const partnerName = partner?.name ?? null;
 
   const initialScheduledAtIso = initialData?.scheduledAt ?? null;
+  // Hydratation depuis l'horloge/TZ du navigateur — impossible en SSR sans mismatch.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (initialScheduledAtIso) {
       const d = new Date(initialScheduledAtIso);
@@ -141,6 +143,7 @@ export function ReminderForm({
     }
     setCeSoirAvailable(new Date().getHours() < 20);
   }, [initialScheduledAtIso]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const onChipClick = (chip: Chip) => {
     if (chip.kind === "custom") {
