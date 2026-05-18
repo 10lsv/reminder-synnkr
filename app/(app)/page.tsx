@@ -138,33 +138,35 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       ) : (
-        <Card
-          padding="lg"
-          className="relative space-y-5 overflow-hidden border-0 bg-foreground p-7 text-background ring-0 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_18px_40px_-18px_rgba(0,0,0,0.45)]"
-        >
-          <div className="grid grid-cols-3 divide-x divide-background/15">
-            <StatCell
-              icon={User}
-              label="Pour toi"
-              value={personalCount}
-              tone="dark"
-            />
-            <StatCell
-              icon={Users}
-              label="En commun"
-              value={sharedCount}
-              tone="dark"
-            />
-            <StatCell
-              icon={Zap}
-              label="Urgent"
-              value={urgentCount}
-              highlight={urgentCount > 0 ? "urgent" : undefined}
-              tone="dark"
-            />
-          </div>
-          <DailyProgress rappels={dayRowsList} tone="dark" />
-        </Card>
+        <div>
+          <Card
+            padding="lg"
+            className="relative space-y-5 overflow-hidden border-0 bg-foreground p-7 text-background ring-0 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_18px_40px_-18px_rgba(0,0,0,0.45)] animate-breathing"
+          >
+            <div className="grid grid-cols-3 divide-x divide-background/15">
+              <StatCell
+                icon={User}
+                label="Pour toi"
+                value={personalCount}
+                tone="dark"
+              />
+              <StatCell
+                icon={Users}
+                label="En commun"
+                value={sharedCount}
+                tone="dark"
+              />
+              <StatCell
+                icon={Zap}
+                label="Urgent"
+                value={urgentCount}
+                highlight={urgentCount > 0 ? "urgent" : undefined}
+                tone="dark"
+              />
+            </div>
+            <DailyProgress rappels={dayRowsList} tone="dark" />
+          </Card>
+        </div>
       )}
 
       {upcomingList.length > 0 && (
