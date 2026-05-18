@@ -5,9 +5,10 @@ export const button = cva(
   [
     "inline-flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation",
     "rounded-lg border border-transparent text-sm font-medium whitespace-nowrap",
-    "transition-all outline-none select-none",
+    "transition-all duration-200 ease-out outline-none select-none transform-gpu",
+    "hover:-translate-y-px active:scale-[0.97] active:translate-y-0 active:duration-75",
     "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-    "disabled:pointer-events-none disabled:opacity-50",
+    "disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ],
   {

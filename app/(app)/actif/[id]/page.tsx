@@ -44,20 +44,20 @@ export default async function ActiveReminderPage({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background px-6 pt-16 pb-12">
-      <header className="flex justify-center">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background px-6 pt-16 pb-12 animate-fade-in-up">
+      <header className="flex justify-center animate-fade-in-up" style={{ animationDelay: "80ms" }}>
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
           Reminder · <LocalTime iso={reminder.scheduled_at} mode="time" />
         </p>
       </header>
 
       <div className="flex flex-1 items-center justify-center py-12">
-        <p className="text-center text-3xl font-medium leading-tight text-foreground">
+        <p className="text-center text-3xl font-medium leading-tight text-foreground animate-hero-rise">
           {reminder.message}
         </p>
       </div>
 
-      <div className="mx-auto w-full max-w-sm">
+      <div className="mx-auto w-full max-w-sm animate-fade-in-up" style={{ animationDelay: "320ms" }}>
         <ActiveReminderActions id={reminder.id} />
       </div>
     </div>

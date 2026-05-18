@@ -103,7 +103,7 @@ export default async function HomePage() {
   const dayRowsList = dayRows ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="page-enter space-y-6">
       <header className="space-y-1 pt-2 text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           <TodayLabel />
@@ -263,7 +263,10 @@ function StatCell({
       : "text-muted-foreground";
   return (
     <div className="flex flex-col items-center justify-center gap-2.5 px-2 py-2">
-      <Icon className={cn("size-[20px]", iconColor)} strokeWidth={1.8} />
+      <Icon
+        className={cn("size-[20px]", iconColor, isUrgent && "animate-pulse-dot")}
+        strokeWidth={1.8}
+      />
       <span
         className={cn(
           "text-[44px] font-medium leading-none tabular-nums tracking-tight",

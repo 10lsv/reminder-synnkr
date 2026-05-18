@@ -100,7 +100,7 @@ export default async function RappelsPage({
   const isFirstTime = (totalCount ?? 0) === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="page-enter space-y-6">
       <header className="flex items-end justify-between gap-4 pt-2">
         <div className="space-y-1">
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">

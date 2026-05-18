@@ -19,7 +19,7 @@ export default async function NouveauRappelPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="page-enter space-y-6">
       <header className="space-y-1 pt-2">
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           Programmer

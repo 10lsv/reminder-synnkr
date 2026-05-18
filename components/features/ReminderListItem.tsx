@@ -51,9 +51,10 @@ export function ReminderListItem({
   return (
     <div
       className={cn(
-        "flex items-center gap-2.5 border-b border-border/60 py-2.5 last:border-b-0",
-        isUrgent && "bg-destructive/10 -mx-2 px-2 my-1 rounded-md border-transparent",
-        isDone && "bg-success/10 -mx-2 px-2 rounded-md border-transparent",
+        "group/item flex items-center gap-2.5 border-b border-border/60 py-2.5 last:border-b-0 transition-colors duration-150",
+        "hover:bg-muted/40 -mx-2 px-2 rounded-md",
+        isUrgent && "bg-destructive/10 my-1 border-transparent hover:bg-destructive/15",
+        isDone && "bg-success/10 border-transparent hover:bg-success/15",
       )}
     >
       <div className="flex w-3 flex-col items-center">
@@ -77,7 +78,7 @@ export function ReminderListItem({
 
       <Link
         href={`/rappels/${reminder.id}`}
-        className="flex flex-1 flex-col gap-0.5 min-w-0"
+        className="flex flex-1 flex-col gap-0.5 min-w-0 transition-transform duration-150 ease-out active:scale-[0.985] transform-gpu"
       >
         <p
           className={cn(

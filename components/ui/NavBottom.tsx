@@ -56,10 +56,11 @@ export function NavBottom() {
               >
                 <span
                   className={cn(
-                    "flex size-10 items-center justify-center rounded-full transition-colors",
+                    "flex size-10 items-center justify-center rounded-full transition-all duration-300 ease-out transform-gpu",
+                    "active:scale-90 active:duration-100",
                     active
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground",
+                      ? "bg-accent text-accent-foreground scale-105"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60 scale-100",
                   )}
                 >
                   <Icon className="size-[20px]" />
